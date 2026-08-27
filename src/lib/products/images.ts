@@ -52,15 +52,18 @@ export async function upsertProductImage(
 
 export async function fetchProductImageMap(): Promise<Record<string, string>> {
   const supabase = createSupabaseAdmin();
-  const { data, error } = await supabase
+  const withJoin = await supabase
     .from("Product")
     .select("slug, images:ProductImage(url, sortOrder)")
     .eq("isActive", true);
 
-  if (error) throw error;
+  if (withJoin.error) {
+    console.warn("Product images map fallback:", withJoin.error.message);
+    return {};
+  }
 
   const map: Record<string, string> = {};
-  for (const product of data ?? []) {
+  for (const product of withJoin.data ?? []) {
     const images = product.images as { url: string; sortOrder: number }[] | null;
     const url = getPrimaryImageUrl(
       images?.map((img, i) => ({

@@ -27,7 +27,10 @@ export interface AdminProduct {
   images?: ProductImageRecord[];
 }
 
-const PRODUCT_SELECT = "*, category:Category(id, name, slug, emoji, sortOrder), images:ProductImage(id, productId, url, alt, sortOrder)";
+const PRODUCT_SELECT_WITH_IMAGES =
+  "*, category:Category(id, name, slug, emoji, sortOrder), images:ProductImage(id, productId, url, alt, sortOrder)";
+const PRODUCT_SELECT_BASIC =
+  "*, category:Category(id, name, slug, emoji, sortOrder)";
 
 export async function fetchCategories(): Promise<AdminCategory[]> {
   const supabase = createSupabaseAdmin();
@@ -43,25 +46,52 @@ export async function fetchCategories(): Promise<AdminCategory[]> {
 
 export async function fetchProducts(): Promise<AdminProduct[]> {
   const supabase = createSupabaseAdmin();
-  const { data, error } = await supabase
+
+  const withImages = await supabase
     .from("Product")
-    .select(PRODUCT_SELECT)
+    .select(PRODUCT_SELECT_WITH_IMAGES)
     .order("sortOrder", { ascending: true });
 
-  if (error) throw error;
-  return (data ?? []) as AdminProduct[];
+  if (!withImages.error) {
+    return (withImages.data ?? []) as AdminProduct[];
+  }
+
+  console.warn("ProductImage join failed, fallback:", withImages.error.message);
+
+  const fallback = await supabase
+    .from("Product")
+    .select(PRODUCT_SELECT_BASIC)
+    .order("sortOrder", { ascending: true });
+
+  if (fallback.error) throw fallback.error;
+  return ((fallback.data ?? []) as AdminProduct[]).map((p) => ({
+    ...p,
+    images: [],
+  }));
 }
 
 export async function fetchProduct(id: string): Promise<AdminProduct | null> {
   const supabase = createSupabaseAdmin();
-  const { data, error } = await supabase
+
+  const withImages = await supabase
     .from("Product")
-    .select(PRODUCT_SELECT)
+    .select(PRODUCT_SELECT_WITH_IMAGES)
     .eq("id", id)
     .maybeSingle();
 
-  if (error) throw error;
-  return data as AdminProduct | null;
+  if (!withImages.error) {
+    return withImages.data as AdminProduct | null;
+  }
+
+  const fallback = await supabase
+    .from("Product")
+    .select(PRODUCT_SELECT_BASIC)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (fallback.error) throw fallback.error;
+  if (!fallback.data) return null;
+  return { ...(fallback.data as AdminProduct), images: [] };
 }
 
 export async function slugExists(slug: string, excludeId?: string): Promise<boolean> {
