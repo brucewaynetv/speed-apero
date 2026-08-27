@@ -41,7 +41,7 @@ export function getAdminNav(tier: DemoTier): AdminNavItem[] {
     { href: base, label: "Dashboard", icon: LayoutDashboard },
     { href: `${base}/commandes`, label: "Commandes", icon: ClipboardList },
     { href: `${base}/produits`, label: "Produits", icon: Package },
-    { href: `${base}/cuisine`, label: "Mode cuisine", icon: ChefHat, feature: "kitchenMode" },
+    { href: `${base}/cuisine`, label: "Cuisine", icon: ChefHat, feature: "kitchenMode" },
     { href: `${base}/marketing`, label: "Marketing", icon: Megaphone, feature: "marketingBanners" },
     { href: `${base}/livreurs`, label: "Livreurs", icon: Truck, feature: "drivers" },
     { href: `${base}/analytics`, label: "Analytics", icon: BarChart3, feature: "advancedAnalytics" },

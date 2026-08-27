@@ -32,58 +32,52 @@ export function AdminShell({ tier, email, children }: AdminShellProps) {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col">
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-black/90 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4">
-          <div className="flex items-center gap-3">
-            <UtensilsCrossed className="h-5 w-5 text-brand-orange" />
-            <span className="font-display text-xl tracking-wide text-brand-cream">
+    <div className="flex min-h-dvh flex-col">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-black/95 backdrop-blur-md">
+        <div className="mx-auto flex h-12 max-w-7xl items-center justify-between gap-3 px-4 sm:h-14">
+          <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+            <UtensilsCrossed className="h-5 w-5 shrink-0 text-brand-orange" />
+            <span className="font-display text-lg tracking-wide text-brand-cream sm:text-xl">
               SPEED APÉRO
             </span>
             <AdminTierSelector currentTier={tier} />
           </div>
 
-          <nav className="hidden items-center gap-1 md:flex">
-            {nav.map(({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  isActive(href)
-                    ? "bg-brand-orange/15 text-brand-orange"
-                    : "text-brand-cream/70 hover:bg-white/5 hover:text-brand-cream"
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-2">
-            <span className="hidden text-xs text-brand-cream/50 lg:inline">{email}</span>
-            <Button variant="ghost" size="sm" onClick={logout}>
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <span className="hidden max-w-[180px] truncate text-xs text-brand-cream/60 xl:inline">
+              {email}
+            </span>
+            <Button variant="ghost" size="sm" className="h-9 gap-1.5 px-2.5" onClick={logout}>
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Déconnexion</span>
             </Button>
           </div>
         </div>
 
-        <nav className="flex gap-1 overflow-x-auto border-t border-white/5 px-4 py-2 md:hidden scrollbar-hide">
-          {nav.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium",
-                isActive(href) ? "bg-brand-orange/15 text-brand-orange" : "text-brand-cream/70"
-              )}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {label}
-            </Link>
-          ))}
+        <nav
+          aria-label="Navigation admin"
+          className="border-t border-white/5 bg-brand-anthracite/40"
+        >
+          <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-3 py-2 scrollbar-hide sm:px-4">
+            {nav.map(({ href, label, icon: Icon }) => {
+              const active = isActive(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    "inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 text-sm font-medium transition-colors",
+                    active
+                      ? "bg-brand-orange text-white shadow-md shadow-brand-orange/25"
+                      : "text-brand-cream/65 hover:bg-white/5 hover:text-brand-cream"
+                  )}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span>{label}</span>
+                </Link>
+              );
+            })}
+          </div>
         </nav>
       </header>
 
