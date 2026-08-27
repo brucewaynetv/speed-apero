@@ -84,11 +84,15 @@ npx netlify deploy --prod
 
 > Sur Windows, déployer depuis un chemin **sans espaces** si le CLI Netlify échoue en local.
 
-### CI/CD (GitHub Actions)
+### CI/CD (GitHub → Netlify)
 
-- Workflow : `.github/workflows/deploy-netlify.yml`
-- Dépôt : https://github.com/brucewaynetv/speed-apero
-- Secrets GitHub configurés : `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`, variables `NEXT_PUBLIC_*`
+- **Dépôt** : https://github.com/brucewaynetv/speed-apero
+- **Branche de production** : `main`
+- Chaque `git push origin main` déclenche un build + déploiement automatique sur Netlify
+- **Dashboard builds** : https://app.netlify.com/projects/speed-apero/deploys
+
+Variables d'environnement configurées sur Netlify (production) :
+`NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
 ## Hébergement (sous-domaine gothamdev.fr)
 
