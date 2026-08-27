@@ -170,19 +170,3 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
-  try {
-    const supabase = createSupabaseAdmin();
-    const { data, error } = await supabase
-      .from("Order")
-      .select("*, items:OrderItem(*, options:OrderItemOption(*))")
-      .order("createdAt", { ascending: false })
-      .limit(50);
-
-    if (error) throw error;
-    return NextResponse.json(data ?? []);
-  } catch (error) {
-    console.error("Orders fetch error:", error);
-    return NextResponse.json({ error: "Erreur" }, { status: 500 });
-  }
-}

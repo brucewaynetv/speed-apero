@@ -22,6 +22,10 @@ Ouvrir [http://localhost:3000/demo](http://localhost:3000/demo)
 | `/demo/pro` | Démo Pro (800 €) — recommandée |
 | `/demo/premium` | Démo Premium (1 200 €) |
 | `/demo/[tier]/checkout` | Tunnel de commande |
+| `/admin` | Dashboard admin (commandes, stats) |
+| `/admin/login` | Connexion admin |
+| `/admin/commandes` | Liste des commandes |
+| `/admin/cuisine` | Mode cuisine (kanban) |
 
 ## Comptes de démonstration
 
@@ -118,10 +122,22 @@ Voir section **Déploiement production** ci-dessus.
 - Checkout 4 étapes + API commandes
 - Seed complet (produits, zones, horaires, comptes)
 - Système de tiers avec sélecteur de formule
+- Déploiement Netlify + CI/CD GitHub
+
+## Phase 2 — Livré
+
+- **Admin dashboard** : `/admin` (login requis)
+- **Gestion commandes** : `/admin/commandes` — liste, détail, changement de statut
+- **Mode cuisine** : `/admin/cuisine` — kanban temps réel (polling 10 s)
+- Auth session sécurisée (cookie HTTP-only + HMAC)
+- API admin protégée : `/api/admin/orders`
+
+### Variable Netlify requise
+
+Ajoutez `AUTH_SECRET` (min. 32 caractères aléatoires) dans les variables d'environnement Netlify.
 
 ## Prochaines phases
 
-- Admin dashboard + mode cuisine
 - Espace client (Pro)
 - Fidélité, livreurs, tracking (Premium)
 - PWA · Stripe · Notifications
