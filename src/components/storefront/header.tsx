@@ -80,8 +80,14 @@ export function StorefrontHeader({ onCartOpen }: StorefrontHeaderProps) {
       </div>
 
       {demoTier && (
-        <div className="border-t border-white/5 bg-brand-anthracite/50 px-4 py-2">
+        <div className="flex items-center gap-3 border-t border-white/5 bg-brand-anthracite/50 px-4 py-2">
           <DemoTierSelector currentTier={demoTier.tier} />
+          <Link
+            href={`/admin/${demoTier.tier}/login`}
+            className="shrink-0 text-xs font-semibold uppercase tracking-wide text-brand-cream/50 hover:text-brand-orange"
+          >
+            Admin →
+          </Link>
         </div>
       )}
 

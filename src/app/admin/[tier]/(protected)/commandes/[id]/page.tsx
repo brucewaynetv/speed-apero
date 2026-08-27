@@ -5,13 +5,18 @@ import { fetchAdminOrder } from "@/lib/orders/queries";
 import { OrderStatusBadge } from "@/components/admin/order-status-badge";
 import { OrderStatusActions } from "@/components/admin/order-status-actions";
 import { formatMoney } from "@/lib/pricing/money";
+import { parseAdminTier, getAdminBasePath } from "@/lib/admin/features";
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ tier: string; id: string }>;
 }
 
-export default async function AdminOrderDetailPage({ params }: PageProps) {
-  const { id } = await params;
+export default async function TierAdminOrderDetailPage({ params }: PageProps) {
+  const { tier: tierParam, id } = await params;
+  const tier = parseAdminTier(tierParam);
+  if (!tier) notFound();
+
+  const base = getAdminBasePath(tier);
   const order = await fetchAdminOrder(id);
   if (!order) notFound();
 
@@ -20,7 +25,7 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <Link
-        href="/admin/commandes"
+        href={`${base}/commandes`}
         className="inline-flex items-center gap-2 text-sm text-brand-cream/60 hover:text-brand-orange"
       >
         <ArrowLeft className="h-4 w-4" />

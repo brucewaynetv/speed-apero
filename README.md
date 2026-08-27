@@ -22,10 +22,11 @@ Ouvrir [http://localhost:3000/demo](http://localhost:3000/demo)
 | `/demo/pro` | Démo Pro (800 €) — recommandée |
 | `/demo/premium` | Démo Premium (1 200 €) |
 | `/demo/[tier]/checkout` | Tunnel de commande |
-| `/admin` | Dashboard admin (commandes, stats) |
-| `/admin/login` | Connexion admin |
-| `/admin/commandes` | Liste des commandes |
-| `/admin/cuisine` | Mode cuisine (kanban) |
+| `/admin` | Choix de la formule admin |
+| `/admin/starter/login` | Admin Starter (500 €) |
+| `/admin/pro/login` | Admin Pro (800 €) — recommandé |
+| `/admin/premium/login` | Admin Premium (1 200 €) |
+| `/admin/[tier]/produits` | Gestion produits (CRUD) |
 
 ## Comptes de démonstration
 
@@ -126,11 +127,12 @@ Voir section **Déploiement production** ci-dessus.
 
 ## Phase 2 — Livré
 
-- **Admin dashboard** : `/admin` (login requis)
-- **Gestion commandes** : `/admin/commandes` — liste, détail, changement de statut
-- **Mode cuisine** : `/admin/cuisine` — kanban temps réel (polling 10 s)
-- Auth session sécurisée (cookie HTTP-only + HMAC)
-- API admin protégée : `/api/admin/orders`
+- **3 admins démo** : Starter / Pro / Premium (`/admin`)
+- **Gestion commandes** + changement de statut
+- **Mode cuisine** (Pro+) — kanban temps réel
+- **Gestion produits** — ajout, modification, désactivation
+- **Marketing, livreurs, analytics** — selon formule
+- Auth session sécurisée + API admin protégée
 
 ### Variable Netlify requise
 

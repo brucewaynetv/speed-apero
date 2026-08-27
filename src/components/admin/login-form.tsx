@@ -4,8 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import type { DemoTier } from "@/lib/demo/tiers";
+import { getAdminBasePath } from "@/lib/admin/features";
 
-export function LoginForm() {
+interface LoginFormProps {
+  tier: DemoTier;
+}
+
+export function LoginForm({ tier }: LoginFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("admin@speedapero.demo");
   const [password, setPassword] = useState("");
@@ -23,7 +29,7 @@ export function LoginForm() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Erreur de connexion");
       toast.success("Connexion réussie");
-      router.push("/admin");
+      router.push(getAdminBasePath(tier));
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erreur");

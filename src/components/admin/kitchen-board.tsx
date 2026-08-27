@@ -8,9 +8,12 @@ import { OrderStatusBadge } from "@/components/admin/order-status-badge";
 import { OrderStatusActions } from "@/components/admin/order-status-actions";
 import { formatMoney } from "@/lib/pricing/money";
 import { KITCHEN_COLUMNS, type OrderStatus } from "@/lib/orders/status";
+import type { DemoTier } from "@/lib/demo/tiers";
+import { getAdminBasePath } from "@/lib/admin/features";
 import type { AdminOrder } from "@/lib/orders/types";
 
 interface KitchenBoardProps {
+  tier: DemoTier;
   initialOrders: AdminOrder[];
 }
 
@@ -21,8 +24,11 @@ function formatTime(iso: string) {
   });
 }
 
-export function KitchenBoard({ initialOrders }: KitchenBoardProps) {
-  const [orders, setOrders] = useState(initialOrders);
+export function KitchenBoard({ tier, initialOrders }: KitchenBoardProps) {
+  const base = getAdminBasePath(tier);
+  const [orders, setOrders] = useState(
+    initialOrders.filter((o) => !["DELIVERED", "CANCELLED"].includes(o.status))
+  );
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchOrders = useCallback(async () => {
@@ -125,7 +131,7 @@ export function KitchenBoard({ initialOrders }: KitchenBoardProps) {
                         <span className="text-sm font-bold text-brand-gold">
                           {formatMoney(order.totalCents)}
                         </span>
-                        <Link href={`/admin/commandes/${order.id}`}>
+                        <Link href={`${base}/commandes/${order.id}`}>
                           <Maximize2 className="h-4 w-4 text-brand-cream/40 hover:text-brand-orange" />
                         </Link>
                       </div>

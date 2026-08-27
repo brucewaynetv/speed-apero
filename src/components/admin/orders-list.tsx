@@ -7,9 +7,12 @@ import { Button } from "@/components/ui/button";
 import { OrderStatusBadge } from "@/components/admin/order-status-badge";
 import { OrderStatusActions } from "@/components/admin/order-status-actions";
 import { formatMoney } from "@/lib/pricing/money";
+import type { DemoTier } from "@/lib/demo/tiers";
+import { getAdminBasePath } from "@/lib/admin/features";
 import type { AdminOrder } from "@/lib/orders/types";
 
 interface OrdersListProps {
+  tier: DemoTier;
   initialOrders: AdminOrder[];
   pollInterval?: number;
 }
@@ -23,7 +26,8 @@ function formatTime(iso: string) {
   });
 }
 
-export function OrdersList({ initialOrders, pollInterval = 15000 }: OrdersListProps) {
+export function OrdersList({ tier, initialOrders, pollInterval = 15000 }: OrdersListProps) {
+  const base = getAdminBasePath(tier);
   const [orders, setOrders] = useState(initialOrders);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -81,7 +85,7 @@ export function OrdersList({ initialOrders, pollInterval = 15000 }: OrdersListPr
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Link
-                      href={`/admin/commandes/${order.id}`}
+                      href={`${base}/commandes/${order.id}`}
                       className="font-display text-2xl text-brand-orange hover:underline"
                     >
                       #{order.orderNumber}
