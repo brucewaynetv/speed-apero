@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-brand-black: #080808;
+  --color-brand-anthracite: #151515;
+  --color-brand-orange: #ff7300;
+  --color-brand-gold: #f5b51b;
+  --color-brand-red: #d71920;
+  --color-brand-cream: #f7f2e8;
+
+  --font-display: var(--font-bebas);
+  --font-body: var(--font-inter);
+  --font-accent: var(--font-oswald);
+}
+
+@layer base {
+  * {
+    @apply border-brand-anthracite;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-brand-black text-brand-cream font-body antialiased;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(255, 115, 0, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(215, 25, 32, 0.05) 0%, transparent 50%);
+    min-height: 100dvh;
+  }
+
+  ::selection {
+    @apply bg-brand-orange/40 text-white;
+  }
+}
+
+@layer utilities {
+  .text-stroke {
+    -webkit-text-stroke: 1px rgba(247, 242, 232, 0.2);
+  }
+
+  .brush-underline {
+    background-image: linear-gradient(120deg, transparent 0%, #ff7300 0%, #ff7300 100%, transparent 100%);
+    background-repeat: no-repeat;
+    background-size: 100% 35%;
+    background-position: 0 90%;
+  }
+
+  .food-card {
+    @apply relative overflow-hidden rounded-2xl border border-white/5 bg-brand-anthracite transition-all duration-300;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .food-card:hover {
+    @apply border-brand-orange/30 -translate-y-0.5;
+    box-shadow:
+      0 8px 32px rgba(255, 115, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .grain-overlay {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
