@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createSupabaseAdmin } from "@/lib/db/supabase";
-import { fetchProducts, slugExists } from "@/lib/products/queries";
+import { fetchProducts, fetchProduct, slugExists } from "@/lib/products/queries";
+import { upsertProductImage } from "@/lib/products/images";
 import { slugify, uniqueProductSlug } from "@/lib/products/slug";
 
 export async function GET() {
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
       badge?: string;
       isPopular?: boolean;
       isActive?: boolean;
+      imageUrl?: string;
     };
 
     if (!body.name?.trim() || !body.categoryId || body.priceCents == null) {
@@ -67,10 +69,17 @@ export async function POST(request: Request) {
         sortOrder: 0,
         updatedAt: now,
       })
-      .select("*, category:Category(id, name, slug, emoji, sortOrder)")
+      .select("*, category:Category(id, name, slug, emoji, sortOrder), images:ProductImage(id, productId, url, alt, sortOrder)")
       .single();
 
     if (error) throw error;
+
+    if (body.imageUrl?.trim()) {
+      await upsertProductImage(id, body.imageUrl.trim(), body.name.trim());
+      const withImage = await fetchProduct(id);
+      return NextResponse.json(withImage ?? data, { status: 201 });
+    }
+
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
     console.error("Product create error:", error);

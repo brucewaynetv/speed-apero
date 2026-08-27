@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/pricing/money";
+import { getPrimaryImageUrl } from "@/lib/products/images";
 import type { AdminProduct } from "@/lib/products/queries";
 import type { DemoTier } from "@/lib/demo/tiers";
 import { getAdminBasePath } from "@/lib/admin/features";
@@ -115,6 +116,7 @@ function ProductTable({
       <table className="w-full text-sm">
         <thead className="bg-brand-anthracite text-left text-xs uppercase tracking-wide text-brand-cream/40">
           <tr>
+            <th className="w-14 px-4 py-3" />
             <th className="px-4 py-3">Produit</th>
             <th className="hidden px-4 py-3 sm:table-cell">Catégorie</th>
             <th className="px-4 py-3">Prix</th>
@@ -122,8 +124,24 @@ function ProductTable({
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5 bg-brand-black/40">
-          {products.map((product) => (
+          {products.map((product) => {
+            const thumb = getPrimaryImageUrl(product.images);
+            return (
             <tr key={product.id} className={muted ? "opacity-50" : undefined}>
+              <td className="px-4 py-3">
+                {thumb ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={thumb}
+                    alt=""
+                    className="h-10 w-10 rounded-lg object-cover"
+                  />
+                ) : (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 text-xs text-brand-cream/30">
+                    —
+                  </div>
+                )}
+              </td>
               <td className="px-4 py-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium text-brand-cream">{product.name}</span>
@@ -162,7 +180,8 @@ function ProductTable({
                 </div>
               </td>
             </tr>
-          ))}
+          );
+          })}
         </tbody>
       </table>
     </div>

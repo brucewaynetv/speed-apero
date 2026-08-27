@@ -6,8 +6,10 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type { AdminCategory, AdminProduct } from "@/lib/products/queries";
+import { getPrimaryImageUrl } from "@/lib/products/images";
 import type { DemoTier } from "@/lib/demo/tiers";
 import { getAdminBasePath } from "@/lib/admin/features";
+import { ProductImageField } from "@/components/admin/product-image-field";
 
 interface ProductFormProps {
   tier: DemoTier;
@@ -33,6 +35,7 @@ export function ProductForm({ tier, categories, product }: ProductFormProps) {
   const [badge, setBadge] = useState(product?.badge ?? "");
   const [isPopular, setIsPopular] = useState(product?.isPopular ?? false);
   const [isActive, setIsActive] = useState(product?.isActive ?? true);
+  const [imageUrl, setImageUrl] = useState(getPrimaryImageUrl(product?.images) ?? "");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,6 +56,7 @@ export function ProductForm({ tier, categories, product }: ProductFormProps) {
         badge,
         isPopular,
         isActive,
+        imageUrl: imageUrl.trim() || undefined,
       };
 
       const res = await fetch(
@@ -82,6 +86,8 @@ export function ProductForm({ tier, categories, product }: ProductFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-5">
+      <ProductImageField value={imageUrl} onChange={setImageUrl} productName={name} />
+
       <div>
         <label className="mb-1.5 block text-sm font-medium text-brand-cream/80">
           Nom *

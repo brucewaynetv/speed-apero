@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createSupabaseAdmin } from "@/lib/db/supabase";
 import { fetchProduct, slugExists } from "@/lib/products/queries";
+import { upsertProductImage } from "@/lib/products/images";
 import { slugify, uniqueProductSlug } from "@/lib/products/slug";
 
 interface RouteContext {
@@ -40,6 +41,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       badge?: string;
       isPopular?: boolean;
       isActive?: boolean;
+      imageUrl?: string;
     };
 
     const existing = await fetchProduct(id);
@@ -71,10 +73,17 @@ export async function PATCH(request: Request, context: RouteContext) {
       .from("Product")
       .update(updates)
       .eq("id", id)
-      .select("*, category:Category(id, name, slug, emoji, sortOrder)")
+      .select("*, category:Category(id, name, slug, emoji, sortOrder), images:ProductImage(id, productId, url, alt, sortOrder)")
       .single();
 
     if (error) throw error;
+
+    if (body.imageUrl?.trim()) {
+      await upsertProductImage(id, body.imageUrl.trim(), (body.name ?? existing.name).trim());
+      const withImage = await fetchProduct(id);
+      return NextResponse.json(withImage ?? data);
+    }
+
     return NextResponse.json(data);
   } catch (error) {
     console.error("Product update error:", error);

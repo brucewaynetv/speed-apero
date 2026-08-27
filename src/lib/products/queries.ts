@@ -1,4 +1,5 @@
 import { createSupabaseAdmin } from "@/lib/db/supabase";
+import type { ProductImageRecord } from "@/lib/products/images";
 
 export interface AdminCategory {
   id: string;
@@ -23,7 +24,10 @@ export interface AdminProduct {
   createdAt: string;
   updatedAt: string;
   category?: AdminCategory | null;
+  images?: ProductImageRecord[];
 }
+
+const PRODUCT_SELECT = "*, category:Category(id, name, slug, emoji, sortOrder), images:ProductImage(id, productId, url, alt, sortOrder)";
 
 export async function fetchCategories(): Promise<AdminCategory[]> {
   const supabase = createSupabaseAdmin();
@@ -41,7 +45,7 @@ export async function fetchProducts(): Promise<AdminProduct[]> {
   const supabase = createSupabaseAdmin();
   const { data, error } = await supabase
     .from("Product")
-    .select("*, category:Category(id, name, slug, emoji, sortOrder)")
+    .select(PRODUCT_SELECT)
     .order("sortOrder", { ascending: true });
 
   if (error) throw error;
@@ -52,7 +56,7 @@ export async function fetchProduct(id: string): Promise<AdminProduct | null> {
   const supabase = createSupabaseAdmin();
   const { data, error } = await supabase
     .from("Product")
-    .select("*, category:Category(id, name, slug, emoji, sortOrder)")
+    .select(PRODUCT_SELECT)
     .eq("id", id)
     .maybeSingle();
 

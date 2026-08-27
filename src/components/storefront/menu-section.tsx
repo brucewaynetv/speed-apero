@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CATALOG_CATEGORIES,
   getProductsByCategory,
@@ -15,6 +15,14 @@ export function MenuSection() {
   const [activeCategory, setActiveCategory] = useCategoryObserver(categorySlugs);
   const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [imageMap, setImageMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    fetch("/api/products/images")
+      .then((r) => r.json())
+      .then((data) => setImageMap(data as Record<string, string>))
+      .catch(() => undefined);
+  }, []);
 
   const handleSelect = (product: CatalogProduct) => {
     setSelectedProduct(product);
@@ -48,6 +56,7 @@ export function MenuSection() {
                   <ProductCard
                     key={product.slug}
                     product={product}
+                    imageOverride={imageMap[product.slug]}
                     onSelect={handleSelect}
                   />
                 ))}
@@ -59,6 +68,7 @@ export function MenuSection() {
 
       <ProductModal
         product={selectedProduct}
+        imageOverride={selectedProduct ? imageMap[selectedProduct.slug] : undefined}
         open={modalOpen}
         onOpenChange={setModalOpen}
       />

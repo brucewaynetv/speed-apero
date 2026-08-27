@@ -41,11 +41,12 @@ const PRODUCT_IMAGES: Record<string, string> = {
 
 interface ProductCardProps {
   product: CatalogProduct;
+  imageOverride?: string;
   onSelect: (product: CatalogProduct) => void;
 }
 
-export function ProductCard({ product, onSelect }: ProductCardProps) {
-  const imageUrl = PRODUCT_IMAGES[product.slug] ?? PRODUCT_IMAGES["smash-original"];
+export function ProductCard({ product, imageOverride, onSelect }: ProductCardProps) {
+  const imageUrl = getProductImage(product.slug, imageOverride);
 
   return (
     <article className="food-card group flex flex-col">
@@ -92,6 +93,7 @@ export function ProductCard({ product, onSelect }: ProductCardProps) {
   );
 }
 
-export function getProductImage(slug: string): string {
+export function getProductImage(slug: string, override?: string): string {
+  if (override) return override;
   return PRODUCT_IMAGES[slug] ?? PRODUCT_IMAGES["smash-original"];
 }

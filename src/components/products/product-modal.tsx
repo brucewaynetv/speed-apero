@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 
 interface ProductModalProps {
   product: CatalogProduct | null;
+  imageOverride?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -36,9 +37,11 @@ function getDefaultSelections(product: CatalogProduct): Record<string, string[]>
 
 function ProductModalContent({
   product,
+  imageOverride,
   onClose,
 }: {
   product: CatalogProduct;
+  imageOverride?: string;
   onClose: () => void;
 }) {
   const [quantity, setQuantity] = useState(1);
@@ -94,7 +97,7 @@ function ProductModalContent({
     <>
       <div className="relative aspect-video w-full overflow-hidden rounded-t-2xl">
         <Image
-          src={getProductImage(product.slug)}
+          src={getProductImage(product.slug, imageOverride)}
           alt={product.name}
           fill
           className="object-cover"
@@ -177,7 +180,7 @@ function ProductModalContent({
   );
 }
 
-export function ProductModal({ product, open, onOpenChange }: ProductModalProps) {
+export function ProductModal({ product, imageOverride, open, onOpenChange }: ProductModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 sm:max-w-md">
@@ -185,6 +188,7 @@ export function ProductModal({ product, open, onOpenChange }: ProductModalProps)
           <ProductModalContent
             key={product.slug}
             product={product}
+            imageOverride={imageOverride}
             onClose={() => onOpenChange(false)}
           />
         )}
