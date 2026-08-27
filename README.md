@@ -86,13 +86,23 @@ npx netlify deploy --prod
 
 ### CI/CD (GitHub → Netlify)
 
-- **Dépôt** : https://github.com/brucewaynetv/speed-apero
-- **Branche de production** : `main`
-- Chaque `git push origin main` déclenche un build + déploiement automatique sur Netlify
-- **Dashboard builds** : https://app.netlify.com/projects/speed-apero/deploys
+- **Dépôt** : https://github.com/brucewaynetv/speed-apero (public)
+- **Branche** : `main`
+- **Secrets GitHub** déjà configurés : `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`, `NEXT_PUBLIC_*`
+- **Workflow** : `.github/workflows/deploy-netlify.yml` (prêt localement)
 
-Variables d'environnement configurées sur Netlify (production) :
-`NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+#### Activer le déploiement auto (1 commande)
+
+Le token GitHub actuel n'a pas le scope `workflow`. Exécutez une fois :
+
+```bash
+gh auth refresh -h github.com -s workflow
+git push origin main
+```
+
+Ensuite, chaque push sur `main` déclenche GitHub Actions → build → déploiement Netlify production.
+
+**Alternative** : connecter GitHub dans [Netlify Deploy Settings](https://app.netlify.com/projects/speed-apero/settings/deploys) (GitHub App) pour les builds natifs Netlify.
 
 ## Hébergement (sous-domaine gothamdev.fr)
 
