@@ -53,6 +53,14 @@ export function StorefrontHeader({ onCartOpen }: StorefrontHeaderProps) {
 
         <div className="flex items-center gap-2 sm:gap-3">
           <RestaurantStatus />
+          {demoTier?.features.customerAccount && (
+            <Link
+              href={`${demoTier.basePath}/compte`}
+              className="hidden rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-brand-cream/70 transition-colors hover:border-brand-orange/40 hover:text-brand-orange sm:inline"
+            >
+              Compte
+            </Link>
+          )}
           <button
             type="button"
             onClick={onCartOpen}
@@ -108,6 +116,15 @@ export function StorefrontHeader({ onCartOpen }: StorefrontHeaderProps) {
               {link.label}
             </a>
           ))}
+          {demoTier?.features.customerAccount && (
+            <Link
+              href={`${demoTier.basePath}/compte`}
+              className="rounded-lg px-3 py-2.5 text-sm font-medium text-brand-orange hover:bg-white/5"
+              onClick={() => setMobileOpen(false)}
+            >
+              Mon compte
+            </Link>
+          )}
         </nav>
       </div>
 

@@ -13,13 +13,25 @@ import { DELIVERY_ZONES } from "@/lib/data/catalog";
 type OrderType = "DELIVERY" | "PICKUP";
 type Step = 1 | 2 | 3 | 4;
 
+const PROMO_CODES: Record<string, { type: "percent" | "free_delivery"; value: number }> = {
+  BIENVENUE10: { type: "percent", value: 10 },
+  LIVRAISON0: { type: "free_delivery", value: 0 },
+};
+
 export default function CheckoutPage() {
   const router = useRouter();
-  const { tier, basePath, features } = useDemoTier();
+  const { tier, basePath, features, label } = useDemoTier();
   const { items, getSubtotal, clearCart } = useCartStore();
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>("DELIVERY");
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [orderNumber, setOrderNumber] = useState<number | null>(null);
+  const [promoInput, setPromoInput] = useState("");
+  const [promoCode, setPromoCode] = useState<string | null>(null);
+  const [scheduled, setScheduled] = useState(false);
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [useCredit, setUseCredit] = useState(false);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -33,13 +45,42 @@ export default function CheckoutPage() {
   });
 
   const subtotal = getSubtotal();
-  const zone = DELIVERY_ZONES.find((z) => form.postalCode.startsWith(z.postalCodes.replace("*", "")));
-  const deliveryFee = orderType === "DELIVERY" ? (zone?.deliveryFeeCents ?? 350) : 0;
-  const total = subtotal + deliveryFee;
+  const zone = DELIVERY_ZONES.find((z) =>
+    form.postalCode.startsWith(z.postalCodes.replace("*", ""))
+  );
+  let deliveryFee = orderType === "DELIVERY" ? (zone?.deliveryFeeCents ?? 350) : 0;
+  let discount = 0;
+
+  if (features.promotions && promoCode) {
+    const promo = PROMO_CODES[promoCode];
+    if (promo?.type === "percent") {
+      discount = Math.round(subtotal * (promo.value / 100));
+    }
+    if (promo?.type === "free_delivery") {
+      deliveryFee = 0;
+    }
+  }
+
+  const creditCents = features.customerCredit && useCredit ? 500 : 0;
+  const total = Math.max(0, subtotal - discount - creditCents + deliveryFee);
 
   const updateForm = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
+
+  function applyPromo() {
+    const code = promoInput.trim().toUpperCase();
+    if (!features.promotions) {
+      toast.error("Les codes promo sont disponibles en Pro / Premium");
+      return;
+    }
+    if (!PROMO_CODES[code]) {
+      toast.error("Code invalide");
+      return;
+    }
+    setPromoCode(code);
+    toast.success(`Code ${code} appliqué`);
+  }
 
   const handleSubmit = async () => {
     if (items.length === 0) {
@@ -64,17 +105,22 @@ export default function CheckoutPage() {
           })),
           subtotalCents: subtotal,
           deliveryFeeCents: deliveryFee,
+          discountCents: discount + creditCents,
           totalCents: total,
+          promoCode: promoCode ?? undefined,
+          scheduledAt:
+            features.scheduledOrders && scheduled && scheduledAt
+              ? new Date(scheduledAt).toISOString()
+              : undefined,
         }),
       });
       if (!res.ok) throw new Error("Erreur lors de la commande");
       const data = await res.json();
       clearCart();
+      setOrderId(data.orderId);
+      setOrderNumber(data.orderNumber);
       setStep(4);
       toast.success("Commande confirmée !");
-      if (features.orderTracking) {
-        setTimeout(() => router.push(`${basePath}/commande/${data.orderId}`), 2000);
-      }
     } catch {
       toast.error("Impossible de passer la commande");
     } finally {
@@ -94,6 +140,8 @@ export default function CheckoutPage() {
   }
 
   const steps = ["Livraison", "Informations", "Paiement", "Confirmation"];
+  const inputClass =
+    "w-full rounded-lg border border-white/10 bg-brand-anthracite px-4 py-3 text-brand-cream focus:border-brand-orange focus:outline-none";
 
   return (
     <div className="min-h-screen bg-brand-black">
@@ -101,20 +149,21 @@ export default function CheckoutPage() {
         <Link href={basePath} className="font-display text-2xl text-brand-orange">
           ← SPEED APÉRO
         </Link>
+        <p className="mt-1 text-xs text-brand-cream/40">Checkout · démo {label}</p>
       </header>
 
       <div className="mx-auto max-w-lg px-4 py-8">
         <div className="mb-8 flex gap-2">
-          {steps.map((label, i) => (
+          {steps.map((stepLabel, i) => (
             <div
-              key={label}
+              key={stepLabel}
               className={`flex-1 rounded-lg py-2 text-center text-xs font-bold uppercase ${
-                step >= (i + 1)
+                step >= i + 1
                   ? "bg-brand-orange text-white"
                   : "bg-brand-anthracite text-brand-cream/40"
               }`}
             >
-              {i + 1}. {label}
+              {i + 1}. {stepLabel}
             </div>
           ))}
         </div>
@@ -135,10 +184,34 @@ export default function CheckoutPage() {
                   }`}
                 >
                   <span className="text-3xl">{type === "DELIVERY" ? "🛵" : "🥡"}</span>
-                  <p className="mt-2 font-bold">{type === "DELIVERY" ? "LIVRAISON" : "RETRAIT"}</p>
+                  <p className="mt-2 font-bold">
+                    {type === "DELIVERY" ? "LIVRAISON" : "RETRAIT"}
+                  </p>
                 </button>
               ))}
             </div>
+
+            {features.scheduledOrders && (
+              <div className="rounded-xl border border-white/10 bg-brand-anthracite p-4">
+                <label className="flex items-center gap-2 text-sm font-medium text-brand-cream">
+                  <input
+                    type="checkbox"
+                    checked={scheduled}
+                    onChange={(e) => setScheduled(e.target.checked)}
+                  />
+                  Programmer ma commande (Pro+)
+                </label>
+                {scheduled && (
+                  <input
+                    type="datetime-local"
+                    className={`${inputClass} mt-3`}
+                    value={scheduledAt}
+                    onChange={(e) => setScheduledAt(e.target.value)}
+                  />
+                )}
+              </div>
+            )}
+
             <Button className="w-full" size="lg" onClick={() => setStep(2)}>
               Continuer
             </Button>
@@ -148,6 +221,14 @@ export default function CheckoutPage() {
         {step === 2 && (
           <div className="space-y-4">
             <h1 className="font-display text-3xl tracking-wide">VOS INFORMATIONS</h1>
+            {features.customerAccount && (
+              <p className="rounded-lg border border-brand-orange/20 bg-brand-orange/5 px-3 py-2 text-xs text-brand-orange">
+                Compte client disponible —{" "}
+                <Link href={`${basePath}/compte`} className="underline">
+                  se connecter
+                </Link>
+              </p>
+            )}
             {[
               { key: "firstName", label: "Prénom", required: true },
               { key: "lastName", label: "Nom", required: true },
@@ -164,7 +245,7 @@ export default function CheckoutPage() {
                   required={field.required}
                   value={form[field.key as keyof typeof form]}
                   onChange={(e) => updateForm(field.key, e.target.value)}
-                  className="w-full rounded-lg border border-white/10 bg-brand-anthracite px-4 py-3 text-brand-cream focus:border-brand-orange focus:outline-none"
+                  className={inputClass}
                 />
               </div>
             ))}
@@ -185,15 +266,19 @@ export default function CheckoutPage() {
                       id={field.key}
                       value={form[field.key as keyof typeof form]}
                       onChange={(e) => updateForm(field.key, e.target.value)}
-                      className="w-full rounded-lg border border-white/10 bg-brand-anthracite px-4 py-3 text-brand-cream focus:border-brand-orange focus:outline-none"
+                      className={inputClass}
                     />
                   </div>
                 ))}
               </>
             )}
             <div className="flex gap-3">
-              <Button variant="secondary" onClick={() => setStep(1)}>Retour</Button>
-              <Button className="flex-1" onClick={() => setStep(3)}>Continuer</Button>
+              <Button variant="secondary" onClick={() => setStep(1)}>
+                Retour
+              </Button>
+              <Button className="flex-1" onClick={() => setStep(3)}>
+                Continuer
+              </Button>
             </div>
           </div>
         )}
@@ -202,35 +287,84 @@ export default function CheckoutPage() {
           <div className="space-y-4">
             <h1 className="font-display text-3xl tracking-wide">PAIEMENT</h1>
             <p className="text-sm text-brand-cream/60">
-              Mode démo — aucun paiement réel. Choisissez votre mode de paiement.
+              Mode démo — aucun paiement réel.
             </p>
+
+            {features.promotions && (
+              <div className="rounded-xl border border-white/10 bg-brand-anthracite p-4">
+                <p className="mb-2 text-sm font-medium text-brand-cream">Code promo</p>
+                <div className="flex gap-2">
+                  <input
+                    className={inputClass}
+                    placeholder="BIENVENUE10"
+                    value={promoInput}
+                    onChange={(e) => setPromoInput(e.target.value)}
+                  />
+                  <Button type="button" variant="secondary" onClick={applyPromo}>
+                    OK
+                  </Button>
+                </div>
+                {promoCode && (
+                  <p className="mt-2 text-xs text-brand-gold">Code {promoCode} actif</p>
+                )}
+              </div>
+            )}
+
+            {features.customerCredit && (
+              <label className="flex items-center gap-2 rounded-xl border border-green-500/20 bg-green-500/5 p-4 text-sm text-green-400">
+                <input
+                  type="checkbox"
+                  checked={useCredit}
+                  onChange={(e) => setUseCredit(e.target.checked)}
+                />
+                Utiliser mon crédit client (−5,00 €)
+              </label>
+            )}
+
             {["CARD", "CASH_ON_DELIVERY", "CASH_ON_PICKUP"].map((method) => (
-              <div
-                key={method}
-                className="rounded-xl border border-white/10 bg-brand-anthracite p-4"
-              >
+              <div key={method} className="rounded-xl border border-white/10 bg-brand-anthracite p-4">
                 {method === "CARD" && "💳 Carte bancaire (Stripe — mode test)"}
                 {method === "CASH_ON_DELIVERY" && "💵 Espèces à la livraison"}
                 {method === "CASH_ON_PICKUP" && "💵 Espèces au retrait"}
               </div>
             ))}
-            <div className="rounded-xl bg-brand-black/50 p-4 space-y-2">
+
+            <div className="space-y-2 rounded-xl bg-brand-black/50 p-4">
               <div className="flex justify-between text-sm">
                 <span>Sous-total</span>
                 <span>{formatMoney(subtotal)}</span>
               </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-sm text-brand-gold">
+                  <span>Remise</span>
+                  <span>−{formatMoney(discount)}</span>
+                </div>
+              )}
+              {creditCents > 0 && (
+                <div className="flex justify-between text-sm text-green-400">
+                  <span>Crédit</span>
+                  <span>−{formatMoney(creditCents)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-sm">
                 <span>Livraison</span>
                 <span>{formatMoney(deliveryFee)}</span>
               </div>
-              <div className="flex justify-between font-display text-xl border-t border-white/10 pt-2">
+              <div className="flex justify-between border-t border-white/10 pt-2 font-display text-xl">
                 <span>TOTAL</span>
                 <span className="text-brand-orange">{formatMoney(total)}</span>
               </div>
             </div>
             <div className="flex gap-3">
-              <Button variant="secondary" onClick={() => setStep(2)}>Retour</Button>
-              <Button className="flex-1 font-display text-lg" size="lg" onClick={handleSubmit} disabled={loading}>
+              <Button variant="secondary" onClick={() => setStep(2)}>
+                Retour
+              </Button>
+              <Button
+                className="flex-1 font-display text-lg"
+                size="lg"
+                onClick={handleSubmit}
+                disabled={loading}
+              >
                 {loading ? "Traitement..." : `CONFIRMER — ${formatMoney(total)}`}
               </Button>
             </div>
@@ -238,17 +372,29 @@ export default function CheckoutPage() {
         )}
 
         {step === 4 && (
-          <div className="text-center space-y-4 py-8">
+          <div className="space-y-4 py-8 text-center">
             <span className="text-6xl">✅</span>
             <h1 className="font-display text-4xl tracking-wide text-brand-orange">
               COMMANDE CONFIRMÉE !
             </h1>
             <p className="text-brand-cream/70">
-              Merci ! Votre commande a été enregistrée et sera préparée rapidement.
+              {orderNumber ? `N° ${orderNumber} · ` : ""}
+              Merci ! Votre commande a été enregistrée.
+              {scheduled && scheduledAt ? " (programmée)" : ""}
             </p>
-            <Button asChild size="lg">
-              <Link href={basePath}>Retour au menu</Link>
-            </Button>
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+              {features.orderTracking && orderId && (
+                <Button
+                  size="lg"
+                  onClick={() => router.push(`${basePath}/commande/${orderId}`)}
+                >
+                  Suivre ma commande
+                </Button>
+              )}
+              <Button asChild size="lg" variant={features.orderTracking ? "secondary" : "default"}>
+                <Link href={basePath}>Retour au menu</Link>
+              </Button>
+            </div>
           </div>
         )}
       </div>

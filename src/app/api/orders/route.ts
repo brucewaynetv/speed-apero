@@ -28,7 +28,10 @@ interface CreateOrderBody {
   items: OrderItemInput[];
   subtotalCents: number;
   deliveryFeeCents: number;
+  discountCents?: number;
   totalCents: number;
+  promoCode?: string;
+  scheduledAt?: string;
 }
 
 export async function POST(request: Request) {
@@ -114,8 +117,10 @@ export async function POST(request: Request) {
       paymentStatus: "PENDING",
       subtotalCents: body.subtotalCents,
       deliveryFeeCents: body.deliveryFeeCents,
-      discountCents: 0,
+      discountCents: body.discountCents ?? 0,
       totalCents: body.totalCents,
+      promoCode: body.promoCode ?? null,
+      scheduledAt: body.scheduledAt ?? null,
       customerFirstName: body.customer.firstName,
       customerLastName: body.customer.lastName,
       customerPhone: body.customer.phone,

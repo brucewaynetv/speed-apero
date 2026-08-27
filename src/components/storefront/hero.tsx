@@ -1,13 +1,33 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useDemoTierOptional } from "@/components/demo/demo-tier-provider";
 
 interface HeroSectionProps {
   basePath?: string;
 }
 
 export function HeroSection({ basePath = "" }: HeroSectionProps) {
+  const demo = useDemoTierOptional();
+  const tier = demo?.tier ?? "starter";
+
+  const subtitle =
+    tier === "premium"
+      ? "Fidélité, suivi live et livraison premium — l'expérience complète."
+      : tier === "pro"
+        ? "Compte client, promos et commandes programmées inclus."
+        : "Burgers, kebabs, wraps et recettes maison préparés avec passion.";
+
+  const badges =
+    tier === "premium"
+      ? ["🔥 Fait maison", "📍 Suivi live", "⭐ Fidélité", "🛵 Livreurs"]
+      : tier === "pro"
+        ? ["🔥 Fait maison", "🏷️ Codes promo", "📅 Programmable", "👤 Compte client"]
+        : ["🔥 Fait maison", "🛵 Livraison rapide", "🥩 Produits frais", "⭐ Préparé à la commande"];
+
   return (
     <section id="accueil" className="relative min-h-[70vh] overflow-hidden">
       <div className="absolute inset-0">
@@ -26,15 +46,21 @@ export function HeroSection({ basePath = "" }: HeroSectionProps) {
 
       <div className="relative mx-auto flex max-w-7xl flex-col justify-center px-4 py-16 sm:px-6 sm:py-24 lg:py-32">
         <div className="max-w-2xl">
+          {demo && (
+            <Badge
+              variant={tier === "premium" ? "gold" : tier === "pro" ? "orange" : "outline"}
+              className="mb-4"
+            >
+              Démo {demo.label} · {demo.price} €
+            </Badge>
+          )}
           <h1 className="font-display text-5xl leading-none tracking-wide text-brand-cream sm:text-7xl lg:text-8xl">
             <span className="block brush-underline">DU FAIT MAISON.</span>
             <span className="mt-1 block text-brand-orange">DU GOÛT.</span>
             <span className="mt-1 block">LIVRÉ CHEZ VOUS.</span>
           </h1>
 
-          <p className="mt-6 max-w-lg text-base text-brand-cream/75 sm:text-lg">
-            Burgers, kebabs, wraps et recettes maison préparés avec passion.
-          </p>
+          <p className="mt-6 max-w-lg text-base text-brand-cream/75 sm:text-lg">{subtitle}</p>
 
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg" className="font-display text-xl tracking-wide">
@@ -46,13 +72,11 @@ export function HeroSection({ basePath = "" }: HeroSectionProps) {
           </div>
 
           <div className="mt-8 flex flex-wrap gap-2">
-            {["🔥 Fait maison", "🛵 Livraison rapide", "🥩 Produits frais", "⭐ Préparé à la commande"].map(
-              (badge) => (
-                <Badge key={badge} variant="outline" className="text-xs normal-case">
-                  {badge}
-                </Badge>
-              )
-            )}
+            {badges.map((badge) => (
+              <Badge key={badge} variant="outline" className="text-xs normal-case">
+                {badge}
+              </Badge>
+            ))}
           </div>
         </div>
       </div>
