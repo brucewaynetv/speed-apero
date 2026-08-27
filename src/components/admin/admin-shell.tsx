@@ -6,8 +6,8 @@ import { LogOut, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { DemoTier } from "@/lib/demo/tiers";
-import { getAdminNav, getTierMeta } from "@/lib/admin/features";
-import { TIER_LABELS } from "@/lib/demo/tiers";
+import { getAdminNav } from "@/lib/admin/features";
+import { AdminTierSelector } from "@/components/admin/admin-tier-selector";
 
 interface AdminShellProps {
   tier: DemoTier;
@@ -15,17 +15,10 @@ interface AdminShellProps {
   children: React.ReactNode;
 }
 
-const TIER_BADGE: Record<DemoTier, string> = {
-  starter: "bg-white/10 text-brand-cream border-white/20",
-  pro: "bg-brand-orange/20 text-brand-orange border-brand-orange/40",
-  premium: "bg-brand-gold/20 text-brand-gold border-brand-gold/40",
-};
-
 export function AdminShell({ tier, email, children }: AdminShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const nav = getAdminNav(tier);
-  const meta = getTierMeta(tier);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -47,14 +40,7 @@ export function AdminShell({ tier, email, children }: AdminShellProps) {
             <span className="font-display text-xl tracking-wide text-brand-cream">
               SPEED APÉRO
             </span>
-            <span
-              className={cn(
-                "hidden rounded border px-2 py-0.5 text-xs font-bold uppercase sm:inline",
-                TIER_BADGE[tier]
-              )}
-            >
-              {TIER_LABELS[tier]} · {meta.price} €
-            </span>
+            <AdminTierSelector currentTier={tier} />
           </div>
 
           <nav className="hidden items-center gap-1 md:flex">
@@ -76,12 +62,6 @@ export function AdminShell({ tier, email, children }: AdminShellProps) {
           </nav>
 
           <div className="flex items-center gap-2">
-            <Link
-              href="/admin"
-              className="hidden text-xs text-brand-cream/40 hover:text-brand-orange sm:inline"
-            >
-              Changer de formule
-            </Link>
             <span className="hidden text-xs text-brand-cream/50 lg:inline">{email}</span>
             <Button variant="ghost" size="sm" onClick={logout}>
               <LogOut className="h-4 w-4" />
