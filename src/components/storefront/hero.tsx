@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useDemoTierOptional } from "@/components/demo/demo-tier-provider";
+import { VISUALS } from "@/lib/data/visuals";
 
 interface HeroSectionProps {
   basePath?: string;
@@ -28,23 +29,26 @@ export function HeroSection({ basePath = "" }: HeroSectionProps) {
         ? ["🔥 Fait maison", "🏷️ Codes promo", "📅 Programmable", "👤 Compte client"]
         : ["🔥 Fait maison", "🛵 Livraison rapide", "🥩 Produits frais", "⭐ Préparé à la commande"];
 
+  const heroImage =
+    tier === "premium" ? VISUALS.grill : tier === "pro" ? VISUALS.smash : VISUALS.hero;
+
   return (
-    <section id="accueil" className="relative min-h-[70vh] overflow-hidden">
+    <section id="accueil" className="relative min-h-[75vh] overflow-hidden sm:min-h-[85vh]">
       <div className="absolute inset-0">
         <Image
-          src="https://images.unsplash.com/photo-1568901347635-c4030f17a265?w=1920&q=80"
+          src={heroImage}
           alt="Burgers, frites et street food Speed Apéro"
           fill
           priority
           className="object-cover"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-black via-brand-black/85 to-brand-black/60" />
-        <div className="absolute inset-0 bg-gradient-to-t from-brand-black via-transparent to-brand-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-black via-brand-black/85 to-brand-black/55" />
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-black via-transparent to-brand-black/50" />
         <div className="grain-overlay absolute inset-0 opacity-50" />
       </div>
 
-      <div className="relative mx-auto flex max-w-7xl flex-col justify-center px-4 py-16 sm:px-6 sm:py-24 lg:py-32">
+      <div className="relative mx-auto flex max-w-7xl flex-col justify-center px-4 py-20 sm:px-6 sm:py-28 lg:py-36">
         <div className="max-w-2xl">
           {demo && (
             <Badge
