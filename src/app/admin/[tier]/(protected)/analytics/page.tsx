@@ -5,6 +5,9 @@ import { MiniBarChart, DonutStat } from "@/components/admin/admin-charts";
 import { countTodayOrders, sumTodayRevenue, fetchAdminOrders } from "@/lib/orders/queries";
 import { formatMoney } from "@/lib/pricing/money";
 import { DEMO_HOURLY_ORDERS, DEMO_WEEKLY_REVENUE } from "@/lib/admin/demo-ops";
+import type { AdminOrder } from "@/lib/orders/types";
+
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ tier: string }>;
@@ -19,11 +22,19 @@ export default async function AnalyticsPage({ params }: PageProps) {
     return <UpgradePlaceholder tier={tier} feature="Analytics" requiredTier="premium" />;
   }
 
-  const [todayOrders, todayRevenue, recentOrders] = await Promise.all([
-    countTodayOrders(),
-    sumTodayRevenue(),
-    fetchAdminOrders(100),
-  ]);
+  let todayOrders = 0;
+  let todayRevenue = 0;
+  let recentOrders: AdminOrder[] = [];
+
+  try {
+    [todayOrders, todayRevenue, recentOrders] = await Promise.all([
+      countTodayOrders(),
+      sumTodayRevenue(),
+      fetchAdminOrders(100),
+    ]);
+  } catch (e) {
+    console.error("[AnalyticsPage]", e);
+  }
 
   const delivered = recentOrders.filter((o) => o.status === "DELIVERED").length;
   const cancelled = recentOrders.filter((o) => o.status === "CANCELLED").length;
@@ -31,13 +42,14 @@ export default async function AnalyticsPage({ params }: PageProps) {
   const avgBasket =
     recentOrders.length > 0
       ? recentOrders.reduce((s, o) => s + o.totalCents, 0) / recentOrders.length
-      : 0;
+      : 2450;
   const deliveryRate =
-    recentOrders.length > 0 ? Math.round((delivered / recentOrders.length) * 100) : 0;
+    recentOrders.length > 0 ? Math.round((delivered / recentOrders.length) * 100) : 82;
   const cancelRate =
-    recentOrders.length > 0 ? Math.round((cancelled / recentOrders.length) * 100) : 0;
+    recentOrders.length > 0 ? Math.round((cancelled / recentOrders.length) * 100) : 4;
   const pickupCount = recentOrders.filter((o) => o.type === "PICKUP").length;
   const deliveryCount = recentOrders.filter((o) => o.type === "DELIVERY").length;
+  const usingDemoFallback = recentOrders.length === 0 && todayOrders === 0;
 
   return (
     <div className="space-y-8">
@@ -46,12 +58,23 @@ export default async function AnalyticsPage({ params }: PageProps) {
         <p className="text-brand-cream/50">
           Pilotage Premium — CA, paniers, rush et qualité de service
         </p>
+        {usingDemoFallback && (
+          <p className="mt-2 rounded-lg border border-brand-gold/30 bg-brand-gold/10 px-3 py-2 text-xs text-brand-gold">
+            Données indicatives démo (aucune commande récente ou API indisponible).
+          </p>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Metric label="Commandes aujourd'hui" value={String(todayOrders)} />
-        <Metric label="CA du jour" value={formatMoney(todayRevenue)} />
-        <Metric label="Panier moyen" value={formatMoney(Math.round(avgBasket || 2450))} />
+        <Metric
+          label="Commandes aujourd'hui"
+          value={String(todayOrders || (usingDemoFallback ? 18 : 0))}
+        />
+        <Metric
+          label="CA du jour"
+          value={formatMoney(todayRevenue || (usingDemoFallback ? 48200 : 0))}
+        />
+        <Metric label="Panier moyen" value={formatMoney(Math.round(avgBasket))} />
         <Metric label="Taux livrées" value={`${deliveryRate}%`} />
       </div>
 
@@ -66,13 +89,13 @@ export default async function AnalyticsPage({ params }: PageProps) {
         <div className="space-y-4">
           <DonutStat
             label="Livraison réussie"
-            percent={deliveryRate || 82}
-            detail={`${delivered} livrées / ${recentOrders.length || "—"} récentes`}
+            percent={deliveryRate}
+            detail={`${delivered || "—"} livrées / ${recentOrders.length || "—"} récentes`}
             accent="gold"
           />
           <DonutStat
             label="Annulations"
-            percent={cancelRate || 4}
+            percent={cancelRate}
             detail={`${cancelled} annulée${cancelled !== 1 ? "s" : ""}`}
             accent="orange"
           />
