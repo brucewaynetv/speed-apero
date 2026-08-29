@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/hooks/use-cart";
 import { formatMoney } from "@/lib/pricing/money";
+import { CommercialCtaSection } from "@/components/demo/commercial-cta";
 import { useDemoTier } from "@/components/demo/demo-tier-provider";
 import { DELIVERY_ZONES } from "@/lib/data/catalog";
 
@@ -394,6 +395,13 @@ export default function CheckoutPage() {
               <Button asChild size="lg" variant={features.orderTracking ? "secondary" : "default"}>
                 <Link href={basePath}>Retour au menu</Link>
               </Button>
+            </div>
+            <div className="mt-10 text-left">
+              <CommercialCtaSection
+                tier={tier}
+                title={`Vous venez de tester la démo ${label}`}
+                subtitle="Si cette expérience vous plaît, on la déploie avec votre branding."
+              />
             </div>
           </div>
         )}

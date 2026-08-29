@@ -24,8 +24,16 @@ export function StorefrontFooter() {
         <div>
           <p className="font-display text-4xl tracking-wide text-brand-orange">SPEED APÉRO</p>
           <p className="mt-2 max-w-md text-sm text-brand-cream/50">
-            Dark kitchen · Street food maison · Livraison rapide
+            Dark kitchen · Street food maison · Livraison rapide · Sans commission
           </p>
+          {demo && (
+            <a
+              href="#contact-commercial"
+              className="mt-3 inline-block text-sm font-semibold text-brand-orange hover:underline"
+            >
+              Cette formule m&apos;intéresse →
+            </a>
+          )}
         </div>
         <div className="flex flex-wrap gap-4 text-sm">
           <a href="#carte" className="text-brand-cream/60 hover:text-brand-orange">
@@ -45,6 +53,9 @@ export function StorefrontFooter() {
           <Link href="/demo" className="text-brand-cream/60 hover:text-brand-orange">
             Formules
           </Link>
+          <a href="#contact-commercial" className="text-brand-cream/60 hover:text-brand-orange">
+            Contact
+          </a>
         </div>
       </div>
     </footer>

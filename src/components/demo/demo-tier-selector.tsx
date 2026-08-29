@@ -21,7 +21,9 @@ export function DemoTierSelector({ currentTier }: { currentTier: DemoTier }) {
             className={cn(
               "relative flex flex-1 flex-col items-center rounded-xl border px-2 py-2 text-center transition-all sm:px-4 sm:py-2.5",
               isActive
-                ? "border-brand-orange bg-brand-orange/10 text-brand-orange"
+                ? tier === "premium"
+                  ? "border-brand-gold bg-brand-gold/10 text-brand-gold"
+                  : "border-brand-orange bg-brand-orange/10 text-brand-orange"
                 : "border-white/10 bg-transparent text-brand-cream/60 hover:border-white/20 hover:text-brand-cream"
             )}
           >

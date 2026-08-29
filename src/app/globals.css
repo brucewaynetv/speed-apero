@@ -75,6 +75,27 @@
   .animate-marquee {
     animation: marquee 40s linear infinite;
   }
+
+  .tier-starter .food-card {
+    @apply rounded-lg border-white/10;
+    box-shadow: none;
+  }
+
+  .tier-starter .food-card:hover {
+    @apply -translate-y-0 border-white/15;
+    box-shadow: none;
+  }
+
+  .tier-premium .food-card {
+    @apply border-brand-gold/20;
+  }
+
+  .tier-premium .food-card:hover {
+    @apply border-brand-gold/45;
+    box-shadow:
+      0 8px 32px rgba(245, 181, 27, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
 }
 
 @keyframes marquee {
