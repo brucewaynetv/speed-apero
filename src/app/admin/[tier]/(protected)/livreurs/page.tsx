@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { parseAdminTier, canAccessAdminFeature } from "@/lib/admin/features";
 import { UpgradePlaceholder } from "@/components/admin/upgrade-placeholder";
+import { DriversBoard } from "@/components/admin/drivers-board";
 import { createSupabaseAdmin } from "@/lib/db/supabase";
-import { Badge } from "@/components/ui/badge";
 
 interface PageProps {
   params: Promise<{ tier: string }>;
@@ -17,30 +17,29 @@ export default async function DriversPage({ params }: PageProps) {
     return <UpgradePlaceholder tier={tier} feature="Livreurs" requiredTier="premium" />;
   }
 
-  const supabase = createSupabaseAdmin();
-  const { data: drivers } = await supabase.from("Driver").select("*").order("name");
+  let drivers: { id: string; name: string; phone: string; status: string }[] = [];
+  try {
+    const supabase = createSupabaseAdmin();
+    const { data } = await supabase.from("Driver").select("*").order("name");
+    drivers = (data ?? []).map((d) => ({
+      id: String(d.id),
+      name: String(d.name ?? ""),
+      phone: String(d.phone ?? ""),
+      status: String(d.status ?? "OFFLINE"),
+    }));
+  } catch {
+    drivers = [];
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="font-display text-4xl text-brand-cream">Livreurs</h1>
-        <p className="text-brand-cream/50">Gestion de l&apos;équipe de livraison</p>
+        <p className="text-brand-cream/50">
+          Équipe, disponibilités et courses en cours — formule Premium
+        </p>
       </div>
-      {(drivers ?? []).length === 0 ? (
-        <p className="text-brand-cream/50">Aucun livreur configuré</p>
-      ) : (
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {(drivers ?? []).map((driver) => (
-            <li key={driver.id} className="rounded-2xl border border-white/10 bg-brand-anthracite p-4">
-              <p className="font-semibold text-brand-cream">{driver.name}</p>
-              <p className="text-sm text-brand-cream/60">{driver.phone}</p>
-              <Badge className="mt-2" variant={driver.status === "AVAILABLE" ? "gold" : "outline"}>
-                {driver.status}
-              </Badge>
-            </li>
-          ))}
-        </ul>
-      )}
+      <DriversBoard initialDrivers={drivers} />
     </div>
   );
 }

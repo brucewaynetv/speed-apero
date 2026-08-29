@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, UtensilsCrossed } from "lucide-react";
+import { ExternalLink, Lock, LogOut, UtensilsCrossed } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { DemoTier } from "@/lib/demo/tiers";
-import { getAdminNav } from "@/lib/admin/features";
+import { TIER_LABELS } from "@/lib/demo/tiers";
+import { getAdminNavWithLocks } from "@/lib/admin/features";
 import { AdminTierSelector } from "@/components/admin/admin-tier-selector";
 
 interface AdminShellProps {
@@ -18,7 +20,7 @@ interface AdminShellProps {
 export function AdminShell({ tier, email, children }: AdminShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const nav = getAdminNav(tier);
+  const nav = getAdminNavWithLocks(tier);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -32,7 +34,34 @@ export function AdminShell({ tier, email, children }: AdminShellProps) {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div
+      className={cn(
+        "flex min-h-dvh flex-col",
+        tier === "premium" && "bg-gradient-to-b from-brand-gold/[0.04] to-transparent",
+        tier === "pro" && "bg-gradient-to-b from-brand-orange/[0.03] to-transparent"
+      )}
+    >
+      <div
+        className={cn(
+          "border-b px-4 py-1.5 text-center text-[11px] font-medium sm:text-xs",
+          tier === "premium"
+            ? "border-brand-gold/20 bg-brand-gold/10 text-brand-gold"
+            : tier === "pro"
+              ? "border-brand-orange/20 bg-brand-orange/10 text-brand-orange"
+              : "border-white/5 bg-white/5 text-brand-cream/55"
+        )}
+      >
+        Démo admin <strong>{TIER_LABELS[tier]}</strong>
+        {" · "}
+        <Link href={`/demo/${tier}`} className="underline underline-offset-2 hover:opacity-80">
+          Voir le storefront
+        </Link>
+        {" · "}
+        <Link href="/admin" className="underline underline-offset-2 hover:opacity-80">
+          Changer de formule
+        </Link>
+      </div>
+
       <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-black/95 backdrop-blur-md">
         <div className="mx-auto flex h-12 max-w-7xl items-center justify-between gap-3 px-4 sm:h-14">
           <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
@@ -44,7 +73,14 @@ export function AdminShell({ tier, email, children }: AdminShellProps) {
           </div>
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            <span className="hidden max-w-[180px] truncate text-xs text-brand-cream/60 xl:inline">
+            <Link
+              href={`/demo/${tier}`}
+              className="hidden items-center gap-1 rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-brand-cream/60 hover:border-brand-orange/40 hover:text-brand-orange sm:inline-flex"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Storefront
+            </Link>
+            <span className="hidden max-w-[160px] truncate text-xs text-brand-cream/60 xl:inline">
               {email}
             </span>
             <Button variant="ghost" size="sm" className="h-9 gap-1.5 px-2.5" onClick={logout}>
@@ -59,8 +95,32 @@ export function AdminShell({ tier, email, children }: AdminShellProps) {
           className="border-t border-white/5 bg-brand-anthracite/40"
         >
           <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-3 py-2 scrollbar-hide sm:px-4">
-            {nav.map(({ href, label, icon: Icon }) => {
-              const active = isActive(href);
+            {nav.map(({ href, label, icon: Icon, locked, minTier }) => {
+              const active = !locked && isActive(href);
+              if (locked) {
+                return (
+                  <button
+                    key={href}
+                    type="button"
+                    onClick={() =>
+                      toast.message(`${label} · ${TIER_LABELS[minTier ?? "pro"]}`, {
+                        description: `Débloqué en formule ${TIER_LABELS[minTier ?? "pro"]}`,
+                        action: {
+                          label: `Voir ${TIER_LABELS[minTier ?? "pro"]}`,
+                          onClick: () => router.push(`/admin/${minTier}/login`),
+                        },
+                      })
+                    }
+                    className="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-dashed border-white/10 px-3 text-sm font-medium text-brand-cream/30 hover:border-brand-gold/30 hover:text-brand-cream/50"
+                  >
+                    <Lock className="h-3.5 w-3.5" />
+                    <span>{label}</span>
+                    <span className="rounded bg-white/5 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-brand-gold/70">
+                      {TIER_LABELS[minTier ?? "pro"]}
+                    </span>
+                  </button>
+                );
+              }
               return (
                 <Link
                   key={href}
@@ -68,7 +128,9 @@ export function AdminShell({ tier, email, children }: AdminShellProps) {
                   className={cn(
                     "inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 text-sm font-medium transition-colors",
                     active
-                      ? "bg-brand-orange text-white shadow-md shadow-brand-orange/25"
+                      ? tier === "premium"
+                        ? "bg-brand-gold text-brand-black shadow-md shadow-brand-gold/20"
+                        : "bg-brand-orange text-white shadow-md shadow-brand-orange/25"
                       : "text-brand-cream/65 hover:bg-white/5 hover:text-brand-cream"
                   )}
                 >
