@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { MapPin, Truck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useDemoTier } from "@/components/demo/demo-tier-provider";
+import { PrepLabSection } from "@/components/storefront/prep-lab";
 
 const STEPS = [
   { key: "received", label: "Reçue", desc: "Commande enregistrée" },
@@ -39,6 +40,8 @@ export function OrderTracking({ orderId, orderNumber }: OrderTrackingProps) {
     );
   }
 
+  const preparing = visibleSteps[step]?.key === "preparing";
+
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-brand-orange/30 bg-brand-orange/5 p-6">
@@ -57,6 +60,15 @@ export function OrderTracking({ orderId, orderNumber }: OrderTrackingProps) {
             </div>
           )}
         </div>
+
+        {preparing && (
+          <div className="mt-6 overflow-hidden rounded-xl border border-white/10 bg-[#08080a] p-3">
+            <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-brand-orange">
+              // kitchen_runtime · live prep
+            </p>
+            <PrepLabSection compact autoPlay />
+          </div>
+        )}
 
         <ol className="mt-8 space-y-3">
           {visibleSteps.map((s, i) => {

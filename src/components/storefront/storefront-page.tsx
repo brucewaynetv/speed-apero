@@ -14,6 +14,7 @@ import { FoodMosaic } from "@/components/storefront/food-mosaic";
 import { FoodMarquee } from "@/components/storefront/food-marquee";
 import { FormulesVisualSection } from "@/components/storefront/formules-visual";
 import { AboutVisualSection } from "@/components/storefront/about-visual";
+import { PrepLabSection } from "@/components/storefront/prep-lab";
 import { StorefrontFooter } from "@/components/storefront/storefront-footer";
 import { DemoGuideBar } from "@/components/demo/demo-guide-bar";
 import { CommercialCtaSection } from "@/components/demo/commercial-cta";
@@ -56,6 +57,7 @@ export function StorefrontPage() {
           </div>
         )}
         <MenuSection />
+        {tier !== "starter" && <PrepLabSection />}
         {tier !== "starter" && <FormulesVisualSection />}
         <DeliverySection />
         {tier === "premium" && <AboutVisualSection />}

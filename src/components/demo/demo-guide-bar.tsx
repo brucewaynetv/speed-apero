@@ -19,10 +19,12 @@ const GUIDE_HINTS: Record<
   ],
   pro: [
     { label: "Tester une promo", href: "#carte", icon: Gift },
+    { label: "Prep Lab", href: "#prep-lab", icon: Sparkles },
     { label: "Mon compte", href: "compte", icon: Sparkles },
     { label: "Programmer", href: "checkout", icon: CalendarClock },
   ],
   premium: [
+    { label: "Prep Lab", href: "#prep-lab", icon: Sparkles },
     { label: "Fidélité", href: "compte", icon: Sparkles },
     { label: "Suivi live", href: "#carte", icon: MapPin },
     { label: "Crédit 5 €", href: "checkout", icon: Gift },

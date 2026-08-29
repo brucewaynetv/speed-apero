@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, Inter, Oswald } from "next/font/google";
+import { Bebas_Neue, Inter, JetBrains_Mono, Oswald } from "next/font/google";
 import { Toaster } from "sonner";
 import { RestaurantJsonLd } from "@/components/storefront/json-ld";
 import "./globals.css";
@@ -20,6 +20,11 @@ const oswald = Oswald({
   variable: "--font-oswald",
 });
 
+const jetbrains = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains",
+});
+
 export const metadata: Metadata = {
   title: "Speed Apéro — Burgers, Kebabs & Street Food en Livraison",
   description:
@@ -36,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="fr"
-      className={`${bebas.variable} ${inter.variable} ${oswald.variable} h-full`}
+      className={`${bebas.variable} ${inter.variable} ${oswald.variable} ${jetbrains.variable} h-full`}
     >
       <body className="min-h-full flex flex-col font-body antialiased">
         <RestaurantJsonLd />

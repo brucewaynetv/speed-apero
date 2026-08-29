@@ -11,6 +11,7 @@
   --font-display: var(--font-bebas);
   --font-body: var(--font-inter);
   --font-accent: var(--font-oswald);
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 }
 
 @layer base {
@@ -106,3 +107,213 @@
     transform: translateX(-50%);
   }
 }
+
+@keyframes dropIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-28px) scale(0.92);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(2px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes steamRise {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scaleX(1);
+  }
+  40% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-18px) scaleX(1.2);
+  }
+}
+
+@keyframes prepGlowOrange {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px rgba(255, 115, 0, 0.25), 0 0 20px rgba(255, 115, 0, 0.08);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(255, 115, 0, 0.45), 0 0 32px rgba(255, 115, 0, 0.18);
+  }
+}
+
+@keyframes prepGlowBlue {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.2), 0 0 20px rgba(56, 189, 248, 0.06);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4), 0 0 28px rgba(56, 189, 248, 0.14);
+  }
+}
+
+.prep-panel-glow-orange {
+  animation: prepGlowOrange 1.6s ease-in-out infinite;
+}
+
+.prep-panel-glow-blue {
+  animation: prepGlowBlue 1.6s ease-in-out infinite;
+}
+
+.burger-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 88px;
+}
+
+.burger-stack .ingredient {
+  display: block;
+  border-radius: 999px;
+  transform-origin: center;
+}
+
+.burger-stack .bun-top {
+  width: 78px;
+  height: 18px;
+  background: linear-gradient(180deg, #e8a54b 0%, #c47a28 100%);
+  border-radius: 40px 40px 8px 8px;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25);
+}
+
+.burger-stack .lettuce {
+  width: 82px;
+  height: 8px;
+  background: linear-gradient(90deg, #5cb85c, #3d9b3d);
+  border-radius: 4px;
+  clip-path: polygon(0 40%, 8% 0, 18% 50%, 28% 0, 40% 45%, 52% 0, 64% 50%, 76% 0, 88% 45%, 100% 10%, 100% 100%, 0 100%);
+}
+
+.burger-stack .cheese {
+  width: 80px;
+  height: 6px;
+  background: linear-gradient(180deg, #f5c518, #e0a800);
+  border-radius: 2px;
+  box-shadow: 4px 2px 0 #e0a800, -4px 2px 0 #e0a800;
+}
+
+.burger-stack .patty {
+  width: 76px;
+  height: 14px;
+  background: linear-gradient(180deg, #6b3a22, #3d1f10);
+  border-radius: 8px;
+}
+
+.burger-stack .bun-bottom {
+  width: 78px;
+  height: 12px;
+  background: linear-gradient(180deg, #d4923a, #b06e20);
+  border-radius: 6px 6px 12px 12px;
+}
+
+.burger-stack--loading .ingredient {
+  animation: dropIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.burger-stack--loading .bun-top {
+  animation-delay: 0s;
+}
+.burger-stack--loading .lettuce {
+  animation-delay: 0.2s;
+}
+.burger-stack--loading .cheese {
+  animation-delay: 0.6s;
+}
+.burger-stack--loading .patty {
+  animation-delay: 0.4s;
+}
+.burger-stack--loading .bun-bottom {
+  animation-delay: 0.1s;
+}
+
+.burger-stack--served .ingredient {
+  opacity: 1;
+  transform: none;
+}
+
+.drink-cup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.drink-steam {
+  display: flex;
+  gap: 8px;
+  height: 20px;
+  align-items: flex-end;
+  opacity: 0;
+}
+
+.drink-cup--loading .drink-steam,
+.drink-cup--served .drink-steam {
+  opacity: 1;
+}
+
+.drink-steam span {
+  display: block;
+  width: 2px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(180, 190, 210, 0.55);
+}
+
+.drink-cup--loading .drink-steam span {
+  animation: steamRise 1.2s ease-in-out infinite;
+}
+
+.drink-steam span:nth-child(1) {
+  animation-delay: 0s;
+}
+.drink-steam span:nth-child(2) {
+  animation-delay: 0.25s;
+  height: 18px;
+}
+.drink-steam span:nth-child(3) {
+  animation-delay: 0.5s;
+}
+
+.drink-glass {
+  position: relative;
+  width: 56px;
+  height: 72px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), transparent 40%);
+  overflow: hidden;
+}
+
+.drink-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--fill, 0%);
+  background: linear-gradient(180deg, #a0522d 0%, #6b3a1f 55%, #4a2814 100%);
+  transition: height 0.08s linear;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drink-cup--served .drink-fill {
+  height: 100%;
+}
+
+.drink-pct {
+  mix-blend-mode: overlay;
+}
+
