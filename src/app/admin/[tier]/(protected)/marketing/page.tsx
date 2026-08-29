@@ -47,7 +47,7 @@ export default async function MarketingPage({ params }: PageProps) {
       <div>
         <h1 className="font-display text-4xl text-brand-cream">Marketing</h1>
         <p className="text-brand-cream/50">
-          Bannières storefront — activez, éditez, prévisualisez en live
+          Bannières, codes promo, popup 1ʳᵉ commande et campagnes
         </p>
       </div>
       <MarketingManager initialBanners={banners} />

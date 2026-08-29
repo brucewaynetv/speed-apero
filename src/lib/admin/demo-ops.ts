@@ -74,6 +74,7 @@ export const DEMO_BANNERS = [
     message: "Code BIENVENUE10 · valable toute la semaine",
     bgColor: "#ff7300",
     isActive: true,
+    link: "/demo/pro#carte",
   },
   {
     id: "ban_2",
@@ -81,6 +82,7 @@ export const DEMO_BANNERS = [
     message: "Sur Nîmes centre et alentours",
     bgColor: "#f5b51b",
     isActive: true,
+    link: "/demo/pro#livraison",
   },
   {
     id: "ban_3",
@@ -88,5 +90,107 @@ export const DEMO_BANNERS = [
     message: "Frites offertes sur menus duo",
     bgColor: "#d71920",
     isActive: false,
+    link: "/demo/pro#formules",
+  },
+];
+
+export const DEMO_PROMOS = [
+  {
+    id: "promo_1",
+    code: "BIENVENUE10",
+    type: "PERCENT" as const,
+    value: 10,
+    usedCount: 48,
+    maxUses: 200,
+    isActive: true,
+    label: "−10 % première commande",
+  },
+  {
+    id: "promo_2",
+    code: "LIVRAISON0",
+    type: "FREE_DELIVERY" as const,
+    value: 0,
+    usedCount: 22,
+    maxUses: 100,
+    isActive: true,
+    label: "Livraison offerte",
+  },
+  {
+    id: "promo_3",
+    code: "SMASH5",
+    type: "FIXED" as const,
+    value: 500,
+    usedCount: 9,
+    maxUses: 50,
+    isActive: false,
+    label: "−5 € sur smash",
+  },
+];
+
+export const DEMO_POPUP = {
+  enabled: true,
+  title: "Bienvenue chez Speed Apéro",
+  message: "−10 % sur votre 1ʳᵉ commande avec le code BIENVENUE10",
+  cta: "J'en profite",
+  code: "BIENVENUE10",
+};
+
+export const DEMO_CAMPAIGNS = [
+  {
+    id: "camp_1",
+    name: "Relance panier abandonné",
+    channel: "Email",
+    status: "active" as const,
+    sent: 126,
+    openRate: 34,
+  },
+  {
+    id: "camp_2",
+    name: "SMS vendredi soir",
+    channel: "SMS",
+    status: "scheduled" as const,
+    sent: 0,
+    openRate: 0,
+  },
+  {
+    id: "camp_3",
+    name: "Fidélité Or — dessert offert",
+    channel: "Push",
+    status: "draft" as const,
+    sent: 0,
+    openRate: 0,
+  },
+];
+
+export const DEMO_PENDING_DELIVERIES = [
+  {
+    id: "del_1",
+    orderNumber: 1045,
+    customer: "Jean Dupont",
+    address: "12 rue de la Dark Kitchen",
+    zone: "Centre",
+    eta: "18 min",
+    totalLabel: "28,90 €",
+    ready: true,
+  },
+  {
+    id: "del_2",
+    orderNumber: 1044,
+    customer: "Marie Leroy",
+    address: "4 avenue des Halles",
+    zone: "Gare",
+    eta: "22 min",
+    totalLabel: "19,40 €",
+    ready: true,
+  },
+  {
+    id: "del_3",
+    orderNumber: 1043,
+    customer: "Alex Martin",
+    address: "8 bd Victor Hugo",
+    zone: "Pissevin",
+    eta: "28 min",
+    totalLabel: "34,20 €",
+    ready: false,
   },
 ];

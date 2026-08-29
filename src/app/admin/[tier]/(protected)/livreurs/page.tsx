@@ -36,7 +36,7 @@ export default async function DriversPage({ params }: PageProps) {
       <div>
         <h1 className="font-display text-4xl text-brand-cream">Livreurs</h1>
         <p className="text-brand-cream/50">
-          Équipe, disponibilités et courses en cours — formule Premium
+          Flotte, dispatch des courses et carte live — formule Premium
         </p>
       </div>
       <DriversBoard initialDrivers={drivers} />
