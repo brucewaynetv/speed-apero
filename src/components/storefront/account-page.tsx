@@ -4,6 +4,7 @@ import Link from "next/link";
 import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDemoTier } from "@/components/demo/demo-tier-provider";
+import { CommercialCtaSection } from "@/components/demo/commercial-cta";
 
 export function AccountPage() {
   const { features, label, basePath, tier } = useDemoTier();
@@ -55,6 +56,14 @@ export function AccountPage() {
         {tier === "premium" && (
           <Card title="Préférences" body="Notifications push · PWA activable" />
         )}
+      </div>
+
+      <div className="mt-10">
+        <CommercialCtaSection
+          tier={tier}
+          title={`Compte ${label} — intéressant ?`}
+          subtitle="On active le même parcours pour vos vrais clients."
+        />
       </div>
     </div>
   );
