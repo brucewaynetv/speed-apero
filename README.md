@@ -50,68 +50,48 @@ npm run db:seed    # Données de démo
 - Zustand (panier) · Zod · React Hook Form
 - shadcn/ui · Lucide · Sonner
 
-## Déploiement production
+## Déploiement production (VPS legeekshop)
 
 | URL | Statut |
 |-----|--------|
-| https://speed-apero.netlify.app | ✅ En ligne |
-| https://speed-apero.gothamdev.fr | ⏳ DNS à configurer |
+| https://speed-apero.gothamdev.fr | VPS `152.228.237.29` (PM2 port 3010) |
+| https://speed-apero.netlify.app | Legacy — à désactiver (crédits) |
 
-### DNS requis (chez votre registrar, comme pour `boost.gothamdev.fr`)
+### DNS (LWS / gothamdev.fr)
+
+Remplacer le CNAME Netlify par un enregistrement **A** :
 
 ```
-Type   Nom          Valeur
-CNAME  speed-apero  speed-apero.netlify.app
+Type   Nom           Valeur
+A      speed-apero   152.228.237.29
 ```
 
-Le domaine custom est déjà configuré côté Netlify. Dès que le CNAME est actif, le SSL Let's Encrypt sera provisionné automatiquement.
+Puis SSL sur le VPS :
+
+```bash
+ssh -i ~/.ssh/legeekshop_vps ubuntu@152.228.237.29 \
+  "sudo certbot --nginx -d speed-apero.gothamdev.fr --non-interactive --agree-tos -m contact@gothamdev.fr --redirect"
+```
+
+### Redéployer sur le VPS
+
+```bash
+npm run deploy:vps
+```
+
+Prérequis : clé SSH `%USERPROFILE%\.ssh\legeekshop_vps`, fichier `.env` local (Supabase + `AUTH_SECRET`).
 
 ### Infrastructure
 
-- **Hébergement** : Netlify (projet `speed-apero`)
+- **Hébergement** : VPS OVH legeekshop (`152.228.237.29`)
+- **Process** : PM2 `speed-apero` → `127.0.0.1:3010`
+- **Proxy** : Nginx `speed-apero.gothamdev.fr`
 - **Base de données** : Supabase PostgreSQL (`cnowljsvllujntnfrlpe`)
-- **Admin Netlify** : https://app.netlify.com/projects/speed-apero
+- **Releases** : `/opt/speed-apero-releases/` · runtime `/opt/speed-apero/current`
 
-### Redéployer
+### Couper Netlify (recommandé)
 
-Chaque push sur `main` déclenche automatiquement le déploiement via GitHub Actions.
-
-```bash
-git push origin main
-```
-
-Déploiement manuel si besoin :
-
-```bash
-npm run build
-npx netlify deploy --prod
-```
-
-> Sur Windows, déployer depuis un chemin **sans espaces** si le CLI Netlify échoue en local.
-
-### CI/CD (GitHub → Netlify)
-
-- **Dépôt** : https://github.com/brucewaynetv/speed-apero (public)
-- **Branche** : `main`
-- **Secrets GitHub** déjà configurés : `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`, `NEXT_PUBLIC_*`
-- **Workflow** : `.github/workflows/deploy-netlify.yml` (prêt localement)
-
-#### Activer le déploiement auto (1 commande)
-
-Le token GitHub actuel n'a pas le scope `workflow`. Exécutez une fois :
-
-```bash
-gh auth refresh -h github.com -s workflow
-git push origin main
-```
-
-Ensuite, chaque push sur `main` déclenche GitHub Actions → build → déploiement Netlify production.
-
-**Alternative** : connecter GitHub dans [Netlify Deploy Settings](https://app.netlify.com/projects/speed-apero/settings/deploys) (GitHub App) pour les builds natifs Netlify.
-
-## Hébergement (sous-domaine gothamdev.fr)
-
-Voir section **Déploiement production** ci-dessus.
+Dans Netlify → Site `speed-apero` → **Deploys** → Stop builds / unlink Git, pour ne plus consommer de crédits.
 
 ## Phase 1 — Livré
 
