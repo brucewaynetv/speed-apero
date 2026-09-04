@@ -9,7 +9,6 @@ interface SheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
-  side?: "right" | "bottom";
 }
 
 export function Sheet({ open, onOpenChange, children }: SheetProps) {

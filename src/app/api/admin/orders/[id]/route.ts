@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/require-admin";
-import { createSupabaseAdmin } from "@/lib/db/supabase";
+import { prisma } from "@/lib/db/prisma";
+import { fetchAdminOrder } from "@/lib/orders/queries";
 import { canTransition, type OrderStatus } from "@/lib/orders/status";
 
 interface RouteContext {
@@ -13,18 +14,10 @@ export async function GET(_request: Request, context: RouteContext) {
 
   try {
     const { id } = await context.params;
-    const supabase = createSupabaseAdmin();
-    const { data, error } = await supabase
-      .from("Order")
-      .select("*, items:OrderItem(*, options:OrderItemOption(*))")
-      .eq("id", id)
-      .maybeSingle();
-
-    if (error) throw error;
+    const data = await fetchAdminOrder(id);
     if (!data) {
       return NextResponse.json({ error: "Commande introuvable" }, { status: 404 });
     }
-
     return NextResponse.json(data);
   } catch (error) {
     console.error("Admin order fetch error:", error);
@@ -44,14 +37,10 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Statut requis" }, { status: 400 });
     }
 
-    const supabase = createSupabaseAdmin();
-    const { data: order, error: fetchError } = await supabase
-      .from("Order")
-      .select("status")
-      .eq("id", id)
-      .maybeSingle();
-
-    if (fetchError) throw fetchError;
+    const order = await prisma.order.findUnique({
+      where: { id },
+      select: { status: true },
+    });
     if (!order) {
       return NextResponse.json({ error: "Commande introuvable" }, { status: 404 });
     }
@@ -63,15 +52,12 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
-    const now = new Date().toISOString();
-    const { data, error } = await supabase
-      .from("Order")
-      .update({ status, updatedAt: now })
-      .eq("id", id)
-      .select("*, items:OrderItem(*, options:OrderItemOption(*))")
-      .single();
+    await prisma.order.update({
+      where: { id },
+      data: { status },
+    });
 
-    if (error) throw error;
+    const data = await fetchAdminOrder(id);
     return NextResponse.json(data);
   } catch (error) {
     console.error("Admin order update error:", error);

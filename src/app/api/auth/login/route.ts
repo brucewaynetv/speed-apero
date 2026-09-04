@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { createSupabaseAdmin } from "@/lib/db/supabase";
+import { prisma } from "@/lib/db/prisma";
 import { createSessionToken, sessionCookieOptions } from "@/lib/auth/session";
 
 export async function POST(request: Request) {
@@ -17,14 +17,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = createSupabaseAdmin();
-    const { data: user, error } = await supabase
-      .from("User")
-      .select("id, email, passwordHash, role")
-      .eq("email", email.trim().toLowerCase())
-      .maybeSingle();
+    const user = await prisma.user.findUnique({
+      where: { email: email.trim().toLowerCase() },
+      select: { id: true, email: true, passwordHash: true, role: true },
+    });
 
-    if (error) throw error;
     if (!user?.passwordHash) {
       return NextResponse.json({ error: "Identifiants invalides" }, { status: 401 });
     }

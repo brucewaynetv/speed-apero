@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { parseAdminTier, canAccessAdminFeature } from "@/lib/admin/features";
 import { UpgradePlaceholder } from "@/components/admin/upgrade-placeholder";
 import { DriversBoard } from "@/components/admin/drivers-board";
-import { createSupabaseAdmin } from "@/lib/db/supabase";
+import { prisma } from "@/lib/db/prisma";
+import { isClientEdition } from "@/lib/product/edition";
 
 interface PageProps {
   params: Promise<{ tier: string }>;
@@ -14,18 +15,18 @@ export default async function DriversPage({ params }: PageProps) {
   if (!tier) notFound();
 
   if (!canAccessAdminFeature(tier, "drivers")) {
+    if (isClientEdition()) notFound();
     return <UpgradePlaceholder tier={tier} feature="Livreurs" requiredTier="premium" />;
   }
 
   let drivers: { id: string; name: string; phone: string; status: string }[] = [];
   try {
-    const supabase = createSupabaseAdmin();
-    const { data } = await supabase.from("Driver").select("*").order("name");
-    drivers = (data ?? []).map((d) => ({
-      id: String(d.id),
-      name: String(d.name ?? ""),
-      phone: String(d.phone ?? ""),
-      status: String(d.status ?? "OFFLINE"),
+    const rows = await prisma.driver.findMany({ orderBy: { name: "asc" } });
+    drivers = rows.map((d) => ({
+      id: d.id,
+      name: d.name,
+      phone: d.phone,
+      status: d.status,
     }));
   } catch {
     drivers = [];

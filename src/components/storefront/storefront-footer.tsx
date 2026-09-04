@@ -26,7 +26,7 @@ export function StorefrontFooter() {
           <p className="mt-2 max-w-md text-sm text-brand-cream/50">
             Dark kitchen · Street food maison · Livraison rapide · Sans commission
           </p>
-          {demo && (
+          {demo && !demo.clientEdition && (
             <a
               href="#contact-commercial"
               className="mt-3 inline-block text-sm font-semibold text-brand-orange hover:underline"
@@ -50,12 +50,16 @@ export function StorefrontFooter() {
               Admin
             </Link>
           )}
-          <Link href="/demo" className="text-brand-cream/60 hover:text-brand-orange">
-            Formules
-          </Link>
-          <a href="#contact-commercial" className="text-brand-cream/60 hover:text-brand-orange">
-            Contact
-          </a>
+          {!demo?.clientEdition && (
+            <Link href="/demo" className="text-brand-cream/60 hover:text-brand-orange">
+              Formules
+            </Link>
+          )}
+          {!demo?.clientEdition && (
+            <a href="#contact-commercial" className="text-brand-cream/60 hover:text-brand-orange">
+              Contact
+            </a>
+          )}
         </div>
       </div>
     </footer>

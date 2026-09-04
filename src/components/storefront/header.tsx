@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, ShoppingBag, X } from "lucide-react";
+import { Info, Menu, ShoppingBag, X } from "lucide-react";
 import { useState } from "react";
 import { RestaurantStatus } from "@/components/storefront/restaurant-status";
+import { RestaurantInfoDialog } from "@/components/storefront/restaurant-info-dialog";
 import { DemoTierSelector } from "@/components/demo/demo-tier-selector";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/hooks/use-cart";
@@ -25,6 +26,7 @@ interface StorefrontHeaderProps {
 
 export function StorefrontHeader({ onCartOpen }: StorefrontHeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   const itemCount = useCartStore((s) => s.getItemCount());
   const subtotal = useCartStore((s) => s.getSubtotal());
   const demoTier = useDemoTierOptional();
@@ -53,12 +55,28 @@ export function StorefrontHeader({ onCartOpen }: StorefrontHeaderProps) {
 
         <div className="flex items-center gap-2 sm:gap-3">
           <RestaurantStatus />
+          <button
+            type="button"
+            onClick={() => setInfoOpen(true)}
+            className="rounded-lg border border-white/10 p-2 text-brand-cream/70 transition-colors hover:border-brand-orange/40 hover:text-brand-orange"
+            aria-label="Informations restaurant, horaires et livraison"
+          >
+            <Info className="h-4 w-4" />
+          </button>
           {demoTier?.features.customerAccount && (
             <Link
               href={`${demoTier.basePath}/compte`}
               className="hidden rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-brand-cream/70 transition-colors hover:border-brand-orange/40 hover:text-brand-orange sm:inline"
             >
               Compte
+            </Link>
+          )}
+          {demoTier && (
+            <Link
+              href={`/admin/${demoTier.tier}/login`}
+              className="hidden rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-brand-cream/50 transition-colors hover:border-brand-orange/40 hover:text-brand-orange sm:inline"
+            >
+              Admin
             </Link>
           )}
           <button
@@ -87,7 +105,7 @@ export function StorefrontHeader({ onCartOpen }: StorefrontHeaderProps) {
         </div>
       </div>
 
-      {demoTier && (
+      {demoTier && !demoTier.clientEdition && (
         <div className="flex items-center gap-3 border-t border-white/5 bg-brand-anthracite/50 px-4 py-2">
           <DemoTierSelector currentTier={demoTier.tier} />
           <Link
@@ -116,6 +134,16 @@ export function StorefrontHeader({ onCartOpen }: StorefrontHeaderProps) {
               {link.label}
             </a>
           ))}
+          <button
+            type="button"
+            className="rounded-lg px-3 py-2.5 text-left text-sm font-medium text-brand-orange hover:bg-white/5"
+            onClick={() => {
+              setMobileOpen(false);
+              setInfoOpen(true);
+            }}
+          >
+            Infos & livraison
+          </button>
           {demoTier?.features.customerAccount && (
             <Link
               href={`${demoTier.basePath}/compte`}
@@ -139,6 +167,8 @@ export function StorefrontHeader({ onCartOpen }: StorefrontHeaderProps) {
           </Button>
         </div>
       )}
+
+      <RestaurantInfoDialog open={infoOpen} onOpenChange={setInfoOpen} />
     </header>
   );
 }

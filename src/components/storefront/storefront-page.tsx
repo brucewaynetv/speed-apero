@@ -14,8 +14,8 @@ import { FoodMosaic } from "@/components/storefront/food-mosaic";
 import { FoodMarquee } from "@/components/storefront/food-marquee";
 import { FormulesVisualSection } from "@/components/storefront/formules-visual";
 import { AboutVisualSection } from "@/components/storefront/about-visual";
-import { PrepLabSection } from "@/components/storefront/prep-lab";
 import { StorefrontFooter } from "@/components/storefront/storefront-footer";
+import { PwaInstallBanner } from "@/components/storefront/pwa-install-banner";
 import { DemoGuideBar } from "@/components/demo/demo-guide-bar";
 import { CommercialCtaSection } from "@/components/demo/commercial-cta";
 import { useDemoTierOptional } from "@/components/demo/demo-tier-provider";
@@ -36,32 +36,32 @@ export function StorefrontPage() {
         tier === "premium" && "tier-premium"
       )}
     >
-      {demoTier && <DemoGuideBar />}
+      {demoTier && !demoTier.clientEdition && <DemoGuideBar />}
       <MarketingBanner />
       <StorefrontHeader onCartOpen={() => setCartOpen(true)} />
-      <TierClientExtras />
+      {demoTier && !demoTier.clientEdition && <TierClientExtras />}
+      {demoTier?.clientEdition && demoTier.features.customerAccount && <TierClientExtras />}
       <main className={cn("pb-24 md:pb-0", tier === "starter" && "pb-20")}>
         <HeroSection basePath={basePath} />
         {tier !== "starter" && <FoodMosaic />}
-        <TierFeaturesStrip />
+        {!demoTier?.clientEdition && <TierFeaturesStrip />}
         {tier === "premium" && <FoodMarquee />}
-        {tier === "pro" && (
+        {!demoTier?.clientEdition && tier === "pro" && (
           <div className="border-y border-brand-orange/20 bg-brand-orange/5 py-3 text-center text-sm text-brand-orange">
-            Astuce démo Pro — ajoutez un produit puis utilisez le code{" "}
+            Version Pro — code promo{" "}
             <span className="font-bold">BIENVENUE10</span> au checkout
           </div>
         )}
-        {tier === "premium" && (
+        {!demoTier?.clientEdition && tier === "premium" && (
           <div className="border-y border-brand-gold/30 bg-brand-gold/10 py-3 text-center text-sm text-brand-gold">
-            Astuce démo Premium — créditez 5 € au checkout et suivez la commande en live
+            Version Premium — crédit 5 € au checkout + suivi live après commande
           </div>
         )}
         <MenuSection />
-        {tier !== "starter" && <PrepLabSection />}
         {tier !== "starter" && <FormulesVisualSection />}
         <DeliverySection />
         {tier === "premium" && <AboutVisualSection />}
-        {tier === "starter" && (
+        {!demoTier?.clientEdition && tier === "starter" && (
           <section className="border-y border-white/5 bg-brand-anthracite/30 py-10 text-center">
             <p className="text-sm text-brand-cream/50">
               Formule essentielle — moins d’animations, focus commande rapide.
@@ -74,7 +74,7 @@ export function StorefrontPage() {
             </a>
           </section>
         )}
-        {demoTier && (
+        {demoTier && !demoTier.clientEdition && (
           <CommercialCtaSection
             tier={demoTier.tier}
             title={`La formule ${demoTier.label} vous convient ?`}
@@ -85,6 +85,7 @@ export function StorefrontPage() {
       <StorefrontFooter />
       <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
       <FirstOrderPopup />
+      <PwaInstallBanner />
     </div>
   );
 }

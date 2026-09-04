@@ -1,44 +1,55 @@
 import Link from "next/link";
-import { ADMIN_TIERS } from "@/lib/admin/features";
-import { TIER_LABELS, TIER_PRICES } from "@/lib/demo/tiers";
+import { ADMIN_TIERS, getAdminBasePath } from "@/lib/admin/features";
+import { PRODUCT_VERSIONS } from "@/lib/product/versions";
 import { cn } from "@/lib/utils";
 
 export default function AdminTierSelectorPage() {
   return (
-    <div className="mx-auto flex min-h-dvh max-w-4xl flex-col justify-center px-4 py-12">
+    <div className="mx-auto flex min-h-dvh max-w-6xl flex-col justify-center px-4 py-12">
       <div className="mb-10 text-center">
-        <h1 className="font-display text-5xl text-brand-cream">Admin Speed Apéro</h1>
+        <h1 className="font-display text-5xl text-brand-cream">Admin — 3 versions</h1>
         <p className="mt-2 text-brand-cream/50">
-          Choisissez une formule pour voir le back-office correspondant
+          Chaque formule a son back-office réel (modules filtrés selon le pack)
         </p>
+        <Link href="/" className="mt-3 inline-block text-sm text-brand-orange hover:underline">
+          ← Hub des versions
+        </Link>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        {ADMIN_TIERS.map((tier) => {
-          const isRecommended = tier === "pro";
+      <div className="grid gap-4 lg:grid-cols-3">
+        {PRODUCT_VERSIONS.map((version) => {
+          const adminModules = version.modules.filter((m) => m.area === "admin");
           return (
             <Link
-              key={tier}
-              href={`/admin/${tier}/login`}
+              key={version.id}
+              href={version.adminLoginPath}
               className={cn(
                 "food-card flex flex-col p-6 transition-all",
-                isRecommended && "border-brand-orange/50 ring-1 ring-brand-orange/30"
+                version.recommended && "border-brand-orange/50 ring-1 ring-brand-orange/30",
+                version.accent === "gold" && "border-brand-gold/40"
               )}
             >
-              {isRecommended && (
+              {version.recommended ? (
                 <span className="mb-2 self-start rounded bg-brand-orange px-2 py-0.5 text-[10px] font-bold uppercase text-white">
                   Recommandé
                 </span>
-              )}
-              <h2 className="font-display text-3xl text-brand-cream">{TIER_LABELS[tier]}</h2>
-              <p className="mt-1 font-display text-2xl text-brand-orange">{TIER_PRICES[tier]} €</p>
+              ) : null}
+              <h2
+                className={cn(
+                  "font-display text-3xl",
+                  version.accent === "gold" ? "text-brand-gold" : "text-brand-cream"
+                )}
+              >
+                {version.label}
+              </h2>
+              <p className="mt-1 font-display text-2xl text-brand-orange">{version.price} €</p>
               <ul className="mt-4 flex-1 space-y-1.5 text-xs text-brand-cream/60">
-                <li>✓ Commandes + produits</li>
-                {tier !== "starter" && <li>✓ Mode cuisine + dashboard</li>}
-                {tier === "premium" && <li>✓ Livreurs + analytics</li>}
+                {adminModules.map((m) => (
+                  <li key={m.id}>✓ {m.label}</li>
+                ))}
               </ul>
               <span className="mt-6 block rounded-lg bg-brand-orange/15 py-2.5 text-center text-sm font-bold text-brand-orange">
-                Accéder à l&apos;admin {TIER_LABELS[tier]}
+                Ouvrir admin {version.label}
               </span>
             </Link>
           );
@@ -46,7 +57,14 @@ export default function AdminTierSelectorPage() {
       </div>
 
       <p className="mt-8 text-center text-xs text-brand-cream/30">
-        Démo : admin@speedapero.demo / demo2026
+        Identifiants : admin@speedapero.demo / demo2026 · Accès direct :{" "}
+        {ADMIN_TIERS.map((t) => (
+          <span key={t}>
+            <Link href={getAdminBasePath(t)} className="text-brand-orange hover:underline">
+              /admin/{t}
+            </Link>{" "}
+          </span>
+        ))}
       </p>
     </div>
   );

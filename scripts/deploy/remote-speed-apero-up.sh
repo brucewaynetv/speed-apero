@@ -68,10 +68,20 @@ fi
 
 echo "==> Nginx site"
 if [[ -f "$RELEASE/deploy/nginx-speed-apero.conf" ]]; then
-  sudo install -m 0644 "$RELEASE/deploy/nginx-speed-apero.conf" "$NGINX_SITE"
-  sudo ln -sfn "$NGINX_SITE" /etc/nginx/sites-enabled/speed-apero
-  sudo nginx -t
-  sudo systemctl reload nginx
+  CERT_DIR="/etc/letsencrypt/live/speed-apero.gothamdev.fr"
+  if sudo test -f "${CERT_DIR}/fullchain.pem" && sudo test -f "${CERT_DIR}/privkey.pem"; then
+    sudo install -m 0644 "$RELEASE/deploy/nginx-speed-apero.conf" "$NGINX_SITE"
+    sudo ln -sfn "$NGINX_SITE" /etc/nginx/sites-enabled/speed-apero
+    if sudo nginx -t; then
+      sudo systemctl reload nginx
+    else
+      echo "ERROR: nginx -t failed after SSL config install"
+      exit 1
+    fi
+  else
+    echo "WARN: SSL cert missing for speed-apero.gothamdev.fr — keeping current nginx config"
+    echo "      Run: sudo certbot --nginx -d speed-apero.gothamdev.fr"
+  fi
 fi
 
 cd "$RELEASE_ROOT"

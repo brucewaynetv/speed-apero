@@ -5,6 +5,7 @@ import { UpgradePlaceholder } from "@/components/admin/upgrade-placeholder";
 import { DEMO_LOYALTY_CUSTOMERS } from "@/lib/admin/demo-ops";
 import { LOYALTY_TIERS } from "@/lib/demo/account-demo";
 import { cn } from "@/lib/utils";
+import { isClientEdition } from "@/lib/product/edition";
 
 interface PageProps {
   params: Promise<{ tier: string }>;
@@ -16,6 +17,7 @@ export default async function FidelitePage({ params }: PageProps) {
   if (!tier) notFound();
 
   if (!canAccessAdminFeature(tier, "loyalty")) {
+    if (isClientEdition()) notFound();
     return <UpgradePlaceholder tier={tier} feature="Fidélité" requiredTier="premium" />;
   }
 

@@ -18,6 +18,7 @@ export interface CartItem {
   unitPriceCents: number;
   options: CartOption[];
   image?: string;
+  note?: string;
 }
 
 interface CartState {
@@ -26,7 +27,8 @@ interface CartState {
   addItem: (
     product: CatalogProduct,
     quantity: number,
-    options: CartOption[]
+    options: CartOption[],
+    note?: string
   ) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
@@ -46,8 +48,9 @@ export const useCartStore = create<CartState>()(
       items: [],
       tier: "starter",
 
-      addItem: (product, quantity, options) => {
+      addItem: (product, quantity, options, note) => {
         const unitPriceCents = computeUnitPrice(product.priceCents, options);
+        const trimmed = note?.trim();
         const newItem: CartItem = {
           id: uuidv4(),
           productSlug: product.slug,
@@ -56,6 +59,7 @@ export const useCartStore = create<CartState>()(
           unitPriceCents,
           options,
           image: product.image,
+          ...(trimmed ? { note: trimmed } : {}),
         };
         set((state) => ({ items: [...state.items, newItem] }));
       },

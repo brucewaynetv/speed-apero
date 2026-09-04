@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { VersionHubPage } from "@/components/product/version-hub";
 
 export default function HomePage() {
-  redirect("/demo");
+  return <VersionHubPage />;
 }

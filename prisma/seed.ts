@@ -83,7 +83,7 @@ async function main() {
         categoryId,
         images: {
           create: {
-            url: PRODUCT_IMAGES[product.slug] ?? PRODUCT_IMAGES["smash-original"],
+            url: PRODUCT_IMAGES[product.slug] ?? product.image ?? "/images/food/food-spread.jpg",
             alt: product.name,
           },
         },

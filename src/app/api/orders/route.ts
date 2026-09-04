@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { v4 as uuidv4 } from "uuid";
-import { createSupabaseAdmin } from "@/lib/db/supabase";
+import { prisma } from "@/lib/db/prisma";
 import { getProductBySlug } from "@/lib/data/catalog";
 
 interface OrderItemInput {
@@ -42,31 +41,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Panier vide" }, { status: 400 });
     }
 
-    const supabase = createSupabaseAdmin();
-    const now = new Date().toISOString();
-    const orderId = uuidv4();
-
-    const { data: lastOrder } = await supabase
-      .from("Order")
-      .select("orderNumber")
-      .order("orderNumber", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
+    const lastOrder = await prisma.order.findFirst({
+      orderBy: { orderNumber: "desc" },
+      select: { orderNumber: true },
+    });
     const orderNumber = (lastOrder?.orderNumber ?? 1041) + 1;
 
     const productIds: Record<string, string> = {};
     for (const item of body.items) {
       if (productIds[item.productSlug]) continue;
 
-      const { data: product } = await supabase
-        .from("Product")
-        .select("id")
-        .eq("slug", item.productSlug)
-        .maybeSingle();
-
-      if (product?.id) {
-        productIds[item.productSlug] = product.id;
+      const existing = await prisma.product.findUnique({
+        where: { slug: item.productSlug },
+        select: { id: true },
+      });
+      if (existing) {
+        productIds[item.productSlug] = existing.id;
         continue;
       }
 
@@ -78,94 +68,75 @@ export async function POST(request: Request) {
         );
       }
 
-      const { data: category } = await supabase
-        .from("Category")
-        .select("id")
-        .eq("slug", catalog.categorySlug)
-        .maybeSingle();
-
-      if (!category?.id) {
+      const category = await prisma.category.findUnique({
+        where: { slug: catalog.categorySlug },
+        select: { id: true },
+      });
+      if (!category) {
         return NextResponse.json(
           { error: `Catégorie introuvable pour ${item.productSlug}` },
           { status: 400 }
         );
       }
 
-      const newProductId = uuidv4();
-      const { error: productError } = await supabase.from("Product").insert({
-        id: newProductId,
-        categoryId: category.id,
-        name: catalog.name,
-        slug: catalog.slug,
-        description: catalog.description,
-        priceCents: catalog.priceCents,
-        isPopular: catalog.isPopular ?? false,
-        isActive: true,
-        updatedAt: now,
+      const created = await prisma.product.create({
+        data: {
+          categoryId: category.id,
+          name: catalog.name,
+          slug: catalog.slug,
+          description: catalog.description,
+          priceCents: catalog.priceCents,
+          isPopular: catalog.isPopular ?? false,
+          isActive: true,
+        },
+        select: { id: true },
       });
-
-      if (productError) throw productError;
-      productIds[item.productSlug] = newProductId;
+      productIds[item.productSlug] = created.id;
     }
 
-    const { error: orderError } = await supabase.from("Order").insert({
-      id: orderId,
-      orderNumber,
-      status: "NEW",
-      type: body.type,
-      paymentMethod: body.type === "PICKUP" ? "CASH_ON_PICKUP" : "CASH_ON_DELIVERY",
-      paymentStatus: "PENDING",
-      subtotalCents: body.subtotalCents,
-      deliveryFeeCents: body.deliveryFeeCents,
-      discountCents: body.discountCents ?? 0,
-      totalCents: body.totalCents,
-      promoCode: body.promoCode ?? null,
-      scheduledAt: body.scheduledAt ?? null,
-      customerFirstName: body.customer.firstName,
-      customerLastName: body.customer.lastName,
-      customerPhone: body.customer.phone,
-      customerEmail: body.customer.email,
-      deliveryStreet: body.customer.street,
-      deliveryComplement: body.customer.complement,
-      deliveryPostalCode: body.customer.postalCode,
-      deliveryCity: body.customer.city,
-      deliveryInstructions: body.customer.instructions,
-      updatedAt: now,
+    const order = await prisma.order.create({
+      data: {
+        orderNumber,
+        status: "NEW",
+        type: body.type,
+        paymentMethod: body.type === "PICKUP" ? "CASH_ON_PICKUP" : "CASH_ON_DELIVERY",
+        paymentStatus: "PENDING",
+        subtotalCents: body.subtotalCents,
+        deliveryFeeCents: body.deliveryFeeCents,
+        discountCents: body.discountCents ?? 0,
+        totalCents: body.totalCents,
+        promoCode: body.promoCode ?? null,
+        scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null,
+        customerFirstName: body.customer.firstName,
+        customerLastName: body.customer.lastName,
+        customerPhone: body.customer.phone,
+        customerEmail: body.customer.email,
+        deliveryStreet: body.customer.street ?? null,
+        deliveryComplement: body.customer.complement ?? null,
+        deliveryPostalCode: body.customer.postalCode ?? null,
+        deliveryCity: body.customer.city ?? null,
+        deliveryInstructions: body.customer.instructions ?? null,
+        items: {
+          create: body.items.map((item) => ({
+            productId: productIds[item.productSlug]!,
+            productName: item.productName,
+            quantity: item.quantity,
+            unitPriceCents: item.unitPriceCents,
+            totalCents: item.unitPriceCents * item.quantity,
+            options: {
+              create: item.options.map((opt) => ({
+                groupName: opt.groupName,
+                optionName: opt.optionName,
+                priceCents: opt.priceCents,
+              })),
+            },
+          })),
+        },
+      },
+      select: { id: true, orderNumber: true },
     });
 
-    if (orderError) throw orderError;
-
-    for (const item of body.items) {
-      const orderItemId = uuidv4();
-      const productId = productIds[item.productSlug]!;
-
-      const { error: itemError } = await supabase.from("OrderItem").insert({
-        id: orderItemId,
-        orderId,
-        productId,
-        productName: item.productName,
-        quantity: item.quantity,
-        unitPriceCents: item.unitPriceCents,
-        totalCents: item.unitPriceCents * item.quantity,
-      });
-
-      if (itemError) throw itemError;
-
-      if (item.options.length > 0) {
-        const { error: optionsError } = await supabase.from("OrderItemOption").insert(
-          item.options.map((opt) => ({
-            id: uuidv4(),
-            orderItemId,
-            groupName: opt.groupName,
-            optionName: opt.optionName,
-            priceCents: opt.priceCents,
-          }))
-        );
-        if (optionsError) throw optionsError;
-      }
-    }
-
-    return NextResponse.json({ orderId, orderNumber });
+    return NextResponse.json({ orderId: order.id, orderNumber: order.orderNumber });
   } catch (error) {
     console.error("Order creation error:", error);
     return NextResponse.json(
@@ -174,4 +145,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

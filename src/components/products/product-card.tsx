@@ -7,38 +7,6 @@ import type { CatalogProduct } from "@/lib/data/catalog";
 import { formatMoney } from "@/lib/pricing/money";
 import { cn } from "@/lib/utils";
 
-const PRODUCT_IMAGES: Record<string, string> = {
-  "smash-original": "https://images.unsplash.com/photo-1568901347635-c4030f17a265?w=600&q=80",
-  "double-smash": "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&q=80",
-  "triple-smash": "https://images.unsplash.com/photo-1550547660-d9450f859349?w=600&q=80",
-  "chicken-crispy": "https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=600&q=80",
-  "bacon-bbq": "https://images.unsplash.com/photo-1594212699903-ecfd1599af05?w=600&q=80",
-  "kebab-maison": "https://images.unsplash.com/photo-1529006557810-274dbfebf025?w=600&q=80",
-  "kebab-xl": "https://images.unsplash.com/photo-1633945274413-48af323fb308?w=600&q=80",
-  "kebab-raclette": "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=600&q=80",
-  "wrap-chicken": "https://images.unsplash.com/photo-1626700051175-6818013e5787?w=600&q=80",
-  "wrap-crispy": "https://images.unsplash.com/photo-1626094309840-30a07761a37b?w=600&q=80",
-  "wrap-spicy": "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&q=80",
-  "frites-maison": "https://images.unsplash.com/photo-1573080496219-9984b4c89425?w=600&q=80",
-  "loaded-fries-cheddar": "https://images.unsplash.com/photo-1630384067228-2c45a57f9254?w=600&q=80",
-  "loaded-fries-bacon": "https://images.unsplash.com/photo-1585109649139-36638630d9c7?w=600&q=80",
-  "loaded-fries-chicken": "https://images.unsplash.com/photo-1518013431117-eb1465fa5752?w=600&q=80",
-  "classic-dog": "https://images.unsplash.com/photo-1612392062631-94de55327fff?w=600&q=80",
-  "crispy-dog": "https://images.unsplash.com/photo-1594212699903-ecfd1599af05?w=600&q=80",
-  "bbq-bacon-dog": "https://images.unsplash.com/photo-1550547660-d9450f859349?w=600&q=80",
-  tenders: "https://images.unsplash.com/photo-1567620832904-9fe5cf7bcfe6?w=600&q=80",
-  nuggets: "https://images.unsplash.com/photo-1562967962-632e146e281b?w=600&q=80",
-  "mozzarella-sticks": "https://images.unsplash.com/photo-1531741289258-d87127930c6e?w=600&q=80",
-  "onion-rings": "https://images.unsplash.com/photo-1639024377883-141e176e9408?w=600&q=80",
-  "tiramisu-speculoos": "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=600&q=80",
-  "tiramisu-oreo": "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&q=80",
-  "cheesecake-maison": "https://images.unsplash.com/photo-1533134242443-8544e3700ad6?w=600&q=80",
-  "coca-cola": "https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=600&q=80",
-  "coca-zero": "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=600&q=80",
-  "oasis-tropical": "https://images.unsplash.com/photo-1546173159-315724a31696?w=600&q=80",
-  "eau-minerale": "https://images.unsplash.com/photo-1548839140-29a7492991a9?w=600&q=80",
-};
-
 interface ProductCardProps {
   product: CatalogProduct;
   imageOverride?: string;
@@ -46,10 +14,16 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, imageOverride, onSelect }: ProductCardProps) {
-  const imageUrl = getProductImage(product.slug, imageOverride);
+  const imageUrl = getProductImage(product, imageOverride);
+  const disabled = Boolean(product.unavailable);
 
   return (
-    <article className="food-card group flex flex-col">
+    <article
+      className={cn(
+        "food-card group flex flex-col",
+        disabled && "opacity-60"
+      )}
+    >
       <div className="relative aspect-[4/3] overflow-hidden">
         <Image
           src={imageUrl}
@@ -73,17 +47,23 @@ export function ProductCard({ product, imageOverride, onSelect }: ProductCardPro
         </p>
         <div className="mt-3 flex items-center justify-between">
           <span className="font-display text-2xl text-brand-orange">
-            {formatMoney(product.priceCents)}
+            {product.priceCents > 0 ? formatMoney(product.priceCents) : "Infos"}
           </span>
           <button
             type="button"
             onClick={() => onSelect(product)}
+            disabled={disabled}
             className={cn(
               "flex h-10 w-10 items-center justify-center rounded-full",
               "bg-brand-orange text-white shadow-lg shadow-brand-orange/30",
-              "transition-transform hover:scale-110 active:scale-95"
+              "transition-transform hover:scale-110 active:scale-95",
+              disabled && "cursor-not-allowed opacity-50 hover:scale-100"
             )}
-            aria-label={`Ajouter ${product.name} au panier`}
+            aria-label={
+              disabled
+                ? `${product.name} indisponible`
+                : `Composer ${product.name}`
+            }
           >
             <Plus className="h-5 w-5" />
           </button>
@@ -93,7 +73,13 @@ export function ProductCard({ product, imageOverride, onSelect }: ProductCardPro
   );
 }
 
-export function getProductImage(slug: string, override?: string): string {
+export function getProductImage(
+  productOrSlug: CatalogProduct | string,
+  override?: string
+): string {
   if (override) return override;
-  return PRODUCT_IMAGES[slug] ?? PRODUCT_IMAGES["smash-original"];
+  if (typeof productOrSlug === "string") {
+    return "/images/food/food-spread.jpg";
+  }
+  return productOrSlug.image || "/images/food/food-spread.jpg";
 }

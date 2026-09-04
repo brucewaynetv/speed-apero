@@ -104,7 +104,7 @@ export function getAdminNav(tier: DemoTier): AdminNavItem[] {
   return buildNavItems(tier).filter((item) => !item.feature || features[item.feature]);
 }
 
-/** Nav complète avec items verrouillés (pour teaser upgrade) */
+/** Nav complète avec items verrouillés (teaser upgrade — mode sales uniquement) */
 export function getAdminNavWithLocks(tier: DemoTier): AdminNavItem[] {
   const features = getAdminFeatures(tier);
   return buildNavItems(tier).map((item) => {

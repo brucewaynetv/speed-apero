@@ -5,6 +5,7 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { PrepGlyph } from "@/components/storefront/prep-button";
 import { useCartStore } from "@/hooks/use-cart";
 import { formatMoney } from "@/lib/pricing/money";
 import {
@@ -79,6 +80,11 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
                             {item.options.map((o) => o.optionName).join(", ")}
                           </p>
                         )}
+                        {item.note ? (
+                          <p className="mt-1 text-xs italic text-brand-cream/45">
+                            Note : {item.note}
+                          </p>
+                        ) : null}
                         <p className="mt-1 text-sm font-bold text-brand-orange">
                           {formatMoney(item.unitPriceCents * item.quantity)}
                         </p>
@@ -164,8 +170,13 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
                   <span className="text-brand-orange">{formatMoney(total)}</span>
                 </div>
                 <Button asChild className="w-full font-display text-lg tracking-wide" size="lg">
-                  <Link href={checkoutPath} onClick={() => onOpenChange(false)}>
-                    COMMANDER — {formatMoney(total)}
+                  <Link
+                    href={checkoutPath}
+                    onClick={() => onOpenChange(false)}
+                    className="inline-flex w-full items-center justify-center gap-2.5"
+                  >
+                    <PrepGlyph kind="stack" />
+                    <span>COMMANDER — {formatMoney(total)}</span>
                   </Link>
                 </Button>
               </div>

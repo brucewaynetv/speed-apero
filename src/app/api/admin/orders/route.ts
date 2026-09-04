@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/require-admin";
-import { createSupabaseAdmin } from "@/lib/db/supabase";
+import { prisma } from "@/lib/db/prisma";
+import { fetchAdminOrders } from "@/lib/orders/queries";
+import type { OrderStatus } from "@/lib/orders/status";
 
 export async function GET(request: Request) {
   const auth = await requireAdmin();
@@ -8,24 +10,33 @@ export async function GET(request: Request) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get("status");
+    const status = searchParams.get("status") as OrderStatus | null;
     const limit = Math.min(Number(searchParams.get("limit") ?? 50), 100);
 
-    const supabase = createSupabaseAdmin();
-    let query = supabase
-      .from("Order")
-      .select("*, items:OrderItem(*, options:OrderItemOption(*))")
-      .order("createdAt", { ascending: false })
-      .limit(limit);
-
-    if (status) {
-      query = query.eq("status", status);
+    if (!status) {
+      const data = await fetchAdminOrders(limit);
+      return NextResponse.json(data);
     }
 
-    const { data, error } = await query;
-    if (error) throw error;
+    const orders = await prisma.order.findMany({
+      where: { status },
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      include: {
+        items: {
+          include: { options: true },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    });
 
-    return NextResponse.json(data ?? []);
+    return NextResponse.json(
+      orders.map((o) => ({
+        ...o,
+        createdAt: o.createdAt.toISOString(),
+        updatedAt: o.updatedAt.toISOString(),
+      }))
+    );
   } catch (error) {
     console.error("Admin orders fetch error:", error);
     return NextResponse.json({ error: "Erreur" }, { status: 500 });

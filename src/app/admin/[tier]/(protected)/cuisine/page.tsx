@@ -3,6 +3,7 @@ import { parseAdminTier, canAccessAdminFeature } from "@/lib/admin/features";
 import { fetchAdminOrders } from "@/lib/orders/queries";
 import { KitchenBoard } from "@/components/admin/kitchen-board";
 import { UpgradePlaceholder } from "@/components/admin/upgrade-placeholder";
+import { isClientEdition } from "@/lib/product/edition";
 
 interface PageProps {
   params: Promise<{ tier: string }>;
@@ -14,6 +15,7 @@ export default async function TierKitchenPage({ params }: PageProps) {
   if (!tier) notFound();
 
   if (!canAccessAdminFeature(tier, "kitchenMode")) {
+    if (isClientEdition()) notFound();
     return (
       <UpgradePlaceholder tier={tier} feature="Mode cuisine" requiredTier="pro" />
     );

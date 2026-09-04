@@ -11,7 +11,8 @@ interface MiniBarChartProps {
   title: string;
   bars: ChartBar[];
   accent?: "orange" | "gold" | "green";
-  formatValue?: (v: number) => string;
+  /** Suffixe affiché après la valeur (ex. "€") — pas de callback (Server → Client). */
+  valueSuffix?: string;
   className?: string;
 }
 
@@ -19,7 +20,7 @@ export function MiniBarChart({
   title,
   bars,
   accent = "orange",
-  formatValue = (v) => String(v),
+  valueSuffix = "",
   className,
 }: MiniBarChartProps) {
   const max = Math.max(...bars.map((b) => b.value), 1);
@@ -39,7 +40,8 @@ export function MiniBarChart({
         {bars.map((bar) => (
           <div key={bar.label} className="flex flex-1 flex-col items-center gap-1.5">
             <span className="font-mono text-[10px] text-brand-cream/40">
-              {formatValue(bar.value)}
+              {bar.value}
+              {valueSuffix}
             </span>
             <div className="relative flex w-full flex-1 items-end justify-center">
               <div

@@ -1,5 +1,8 @@
+import { mkdir, writeFile } from "fs/promises";
+import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import { createSupabaseAdmin } from "@/lib/db/supabase";
+import { prisma } from "@/lib/db/prisma";
+import { tryCreateSupabaseAdmin } from "@/lib/db/supabase";
 
 export interface ProductImageRecord {
   id: string;
@@ -22,61 +25,53 @@ export async function upsertProductImage(
   url: string,
   alt?: string
 ): Promise<void> {
-  const supabase = createSupabaseAdmin();
-  const { data: existing } = await supabase
-    .from("ProductImage")
-    .select("id")
-    .eq("productId", productId)
-    .order("sortOrder", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+  const existing = await prisma.productImage.findFirst({
+    where: { productId },
+    orderBy: { sortOrder: "asc" },
+    select: { id: true },
+  });
 
-  if (existing?.id) {
-    const { error } = await supabase
-      .from("ProductImage")
-      .update({ url, alt: alt ?? null })
-      .eq("id", existing.id);
-    if (error) throw error;
+  if (existing) {
+    await prisma.productImage.update({
+      where: { id: existing.id },
+      data: { url, alt: alt ?? null },
+    });
     return;
   }
 
-  const { error } = await supabase.from("ProductImage").insert({
-    id: uuidv4(),
-    productId,
-    url,
-    alt: alt ?? null,
-    sortOrder: 0,
+  await prisma.productImage.create({
+    data: {
+      productId,
+      url,
+      alt: alt ?? null,
+      sortOrder: 0,
+    },
   });
-  if (error) throw error;
 }
 
 export async function fetchProductImageMap(): Promise<Record<string, string>> {
-  const supabase = createSupabaseAdmin();
-  const withJoin = await supabase
-    .from("Product")
-    .select("slug, images:ProductImage(url, sortOrder)")
-    .eq("isActive", true);
+  try {
+    const products = await prisma.product.findMany({
+      where: { isActive: true },
+      select: {
+        slug: true,
+        images: {
+          orderBy: { sortOrder: "asc" },
+          select: { url: true, sortOrder: true },
+        },
+      },
+    });
 
-  if (withJoin.error) {
-    console.warn("Product images map fallback:", withJoin.error.message);
+    const map: Record<string, string> = {};
+    for (const product of products) {
+      const url = product.images[0]?.url;
+      if (url) map[product.slug] = url;
+    }
+    return map;
+  } catch (e) {
+    console.warn("Product images map fallback:", e);
     return {};
   }
-
-  const map: Record<string, string> = {};
-  for (const product of withJoin.data ?? []) {
-    const images = product.images as { url: string; sortOrder: number }[] | null;
-    const url = getPrimaryImageUrl(
-      images?.map((img, i) => ({
-        id: "",
-        productId: "",
-        url: img.url,
-        alt: null,
-        sortOrder: img.sortOrder ?? i,
-      }))
-    );
-    if (url && product.slug) map[product.slug] = url;
-  }
-  return map;
 }
 
 const BUCKET = "product-images";
@@ -91,27 +86,27 @@ export async function uploadProductImageFile(file: File): Promise<string> {
     throw new Error("Image trop lourde (max 5 Mo)");
   }
 
-  const supabase = createSupabaseAdmin();
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const path = `${uuidv4()}.${ext}`;
+  const filename = `${uuidv4()}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
 
-  const { error: uploadError } = await supabase.storage
-    .from(BUCKET)
-    .upload(path, buffer, { contentType: file.type, upsert: false });
-
-  if (uploadError) {
-    if (uploadError.message.includes("Bucket not found")) {
-      await supabase.storage.createBucket(BUCKET, { public: true });
-      const { error: retryError } = await supabase.storage
-        .from(BUCKET)
-        .upload(path, buffer, { contentType: file.type, upsert: false });
-      if (retryError) throw retryError;
-    } else {
-      throw uploadError;
+  const supabase = tryCreateSupabaseAdmin();
+  if (supabase && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    const { error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(filename, buffer, {
+        contentType: file.type,
+        upsert: false,
+      });
+    if (!uploadError) {
+      const { data } = supabase.storage.from(BUCKET).getPublicUrl(filename);
+      return data.publicUrl;
     }
+    console.warn("Supabase upload failed, fallback local:", uploadError.message);
   }
 
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-  return data.publicUrl;
+  const dir = path.join(process.cwd(), "public", "uploads", "products");
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, filename), buffer);
+  return `/uploads/products/${filename}`;
 }

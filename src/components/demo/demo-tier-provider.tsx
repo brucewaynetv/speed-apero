@@ -10,15 +10,19 @@ interface DemoTierContextValue {
   label: string;
   price: number;
   basePath: string;
+  /** true = install client mono-édition (pas de switch / teaser) */
+  clientEdition: boolean;
 }
 
 const DemoTierContext = createContext<DemoTierContextValue | null>(null);
 
 export function DemoTierProvider({
   tier,
+  clientEdition = false,
   children,
 }: {
   tier: DemoTier;
+  clientEdition?: boolean;
   children: ReactNode;
 }) {
   const value: DemoTierContextValue = {
@@ -27,6 +31,7 @@ export function DemoTierProvider({
     label: TIER_LABELS[tier],
     price: TIER_PRICES[tier],
     basePath: `/demo/${tier}`,
+    clientEdition,
   };
 
   return (

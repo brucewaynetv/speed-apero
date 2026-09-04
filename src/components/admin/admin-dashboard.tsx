@@ -121,7 +121,7 @@ export async function AdminDashboard({ tier }: AdminDashboardProps) {
             title="CA 7 jours (indicatif démo)"
             bars={DEMO_WEEKLY_REVENUE}
             accent={tier === "premium" ? "gold" : "orange"}
-            formatValue={(v) => `${v}€`}
+            valueSuffix="€"
           />
           <DonutStat
             label="Part livraison"

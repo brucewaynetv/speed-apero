@@ -73,7 +73,7 @@ export function TierFeaturesStrip() {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <p className="mb-3 text-center text-xs font-bold uppercase tracking-widest text-brand-cream/40">
-          Ce que vous vivez en démo {label}
+          Ce que vous vivez en version {label}
         </p>
         <div className="flex flex-wrap justify-center gap-2">
           {HIGHLIGHTS.map((item) => {

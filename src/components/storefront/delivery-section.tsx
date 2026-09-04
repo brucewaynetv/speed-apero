@@ -45,7 +45,7 @@ export function DeliverySection() {
             {
               icon: Clock,
               title: "Horaires",
-              text: "Lun-Ven 11h-23h · Week-end jusqu'à minuit",
+              text: "Lun–Jeu 18h–23h · Ven–Dim jusqu'à minuit",
               color: "text-brand-red",
             },
           ].map(({ icon: Icon, title, text, color }) => (

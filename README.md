@@ -6,12 +6,17 @@ Plateforme de commande propriétaire pour la dark kitchen **Speed Apéro**, avec
 
 ```bash
 npm install
-npx prisma db push
-npm run db:seed
+npm run db:setup    # Docker Postgres local + schéma + seed
 npm run dev
 ```
 
-Ouvrir [http://localhost:3000/demo](http://localhost:3000/demo)
+Ouvrir [http://localhost:3000](http://localhost:3000)
+
+### Base de données
+
+- **Dev Gotham** : Postgres Docker local (`npm run db:setup`, port `5433`)
+- **Prod client** : PostgreSQL **sur leur hébergement** — renseigner `DATABASE_URL` dans le `.env` de l’édition installée (`editions/INSTALL.md`)
+
 
 ## Routes principales
 
@@ -46,7 +51,7 @@ npm run db:seed    # Données de démo
 ## Stack
 
 - Next.js 16 · TypeScript · Tailwind CSS v4
-- Prisma · SQLite (dev) / PostgreSQL (prod)
+- Prisma · PostgreSQL (Docker en local / Supabase en prod)
 - Zustand (panier) · Zod · React Hook Form
 - shadcn/ui · Lucide · Sonner
 
@@ -55,7 +60,7 @@ npm run db:seed    # Données de démo
 | URL | Statut |
 |-----|--------|
 | https://speed-apero.gothamdev.fr | VPS `152.228.237.29` (PM2 port 3010) |
-| https://speed-apero.netlify.app | Legacy — à désactiver (crédits) |
+| https://speed-apero.netlify.app | Arrêté (repo unlinked, plus de builds) |
 
 ### DNS (LWS / gothamdev.fr)
 

@@ -3,6 +3,7 @@ import { UtensilsCrossed } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { parseAdminTier, getAdminBasePath, getTierMeta } from "@/lib/admin/features";
 import { LoginForm } from "@/components/admin/login-form";
+import { isClientEdition } from "@/lib/product/edition";
 
 interface PageProps {
   params: Promise<{ tier: string }>;
@@ -29,7 +30,9 @@ export default async function TierAdminLoginPage({ params }: PageProps) {
             Admin {meta.label}
           </h1>
           <p className="mt-2 text-sm text-brand-cream/50">
-            Formule {meta.label} · {meta.price} €
+            {isClientEdition()
+              ? `Back-office ${meta.label}`
+              : `Formule ${meta.label} · ${meta.price} €`}
           </p>
         </div>
 
@@ -38,10 +41,16 @@ export default async function TierAdminLoginPage({ params }: PageProps) {
         </div>
 
         <p className="mt-4 text-center text-xs text-brand-cream/30">
-          admin@speedapero.demo / demo2026 ·{" "}
-          <a href="/admin" className="text-brand-orange hover:underline">
-            Changer de formule
-          </a>
+          {isClientEdition() ? (
+            <>Identifiants fournis à l&apos;installation</>
+          ) : (
+            <>
+              admin@speedapero.demo / demo2026 ·{" "}
+              <a href="/admin" className="text-brand-orange hover:underline">
+                Changer de formule
+              </a>
+            </>
+          )}
         </p>
       </div>
     </div>

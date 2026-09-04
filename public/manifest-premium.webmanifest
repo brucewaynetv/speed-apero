@@ -1,0 +1,24 @@
+{
+  "name": "Speed Apéro Premium",
+  "short_name": "Speed Apéro",
+  "description": "Commandez burgers, kebabs et street food — version Premium",
+  "start_url": "/demo/premium",
+  "display": "standalone",
+  "background_color": "#080808",
+  "theme_color": "#ff7300",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/images/food/smash.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/food/hero.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ]
+}

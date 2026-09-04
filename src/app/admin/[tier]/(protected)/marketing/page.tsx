@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { parseAdminTier, canAccessAdminFeature } from "@/lib/admin/features";
 import { UpgradePlaceholder } from "@/components/admin/upgrade-placeholder";
 import { MarketingManager } from "@/components/admin/marketing-manager";
-import { createSupabaseAdmin } from "@/lib/db/supabase";
+import { prisma } from "@/lib/db/prisma";
+import { isClientEdition } from "@/lib/product/edition";
 
 interface PageProps {
   params: Promise<{ tier: string }>;
@@ -14,6 +15,7 @@ export default async function MarketingPage({ params }: PageProps) {
   if (!tier) notFound();
 
   if (!canAccessAdminFeature(tier, "marketingBanners")) {
+    if (isClientEdition()) notFound();
     return <UpgradePlaceholder tier={tier} feature="Marketing" requiredTier="pro" />;
   }
 
@@ -26,17 +28,15 @@ export default async function MarketingPage({ params }: PageProps) {
   }[] = [];
 
   try {
-    const supabase = createSupabaseAdmin();
-    const { data } = await supabase
-      .from("MarketingBanner")
-      .select("*")
-      .order("sortOrder", { ascending: true });
-    banners = (data ?? []).map((b) => ({
-      id: String(b.id),
-      title: String(b.title ?? ""),
-      message: String(b.message ?? ""),
-      bgColor: String(b.bgColor ?? "#ff7300"),
-      isActive: Boolean(b.isActive),
+    const rows = await prisma.marketingBanner.findMany({
+      orderBy: { sortOrder: "asc" },
+    });
+    banners = rows.map((b) => ({
+      id: b.id,
+      title: b.title,
+      message: b.message,
+      bgColor: b.bgColor,
+      isActive: b.isActive,
     }));
   } catch {
     banners = [];

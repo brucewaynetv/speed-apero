@@ -1,4 +1,4 @@
-import { createSupabaseAdmin } from "@/lib/db/supabase";
+import { prisma } from "@/lib/db/prisma";
 import type { ProductImageRecord } from "@/lib/products/images";
 
 export interface AdminCategory {
@@ -27,78 +27,95 @@ export interface AdminProduct {
   images?: ProductImageRecord[];
 }
 
-const PRODUCT_SELECT_WITH_IMAGES =
-  "*, category:Category(id, name, slug, emoji, sortOrder), images:ProductImage(id, productId, url, alt, sortOrder)";
-const PRODUCT_SELECT_BASIC =
-  "*, category:Category(id, name, slug, emoji, sortOrder)";
+function mapProduct(p: {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  priceCents: number;
+  categoryId: string;
+  allergens: string | null;
+  badge: string | null;
+  isPopular: boolean;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+  category?: {
+    id: string;
+    name: string;
+    slug: string;
+    emoji: string | null;
+    sortOrder: number;
+  } | null;
+  images?: {
+    id: string;
+    productId: string;
+    url: string;
+    alt: string | null;
+    sortOrder: number;
+  }[];
+}): AdminProduct {
+  return {
+    id: p.id,
+    name: p.name,
+    slug: p.slug,
+    description: p.description,
+    priceCents: p.priceCents,
+    categoryId: p.categoryId,
+    allergens: p.allergens,
+    badge: p.badge,
+    isPopular: p.isPopular,
+    isActive: p.isActive,
+    sortOrder: p.sortOrder,
+    createdAt: p.createdAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString(),
+    category: p.category ?? null,
+    images: p.images ?? [],
+  };
+}
 
 export async function fetchCategories(): Promise<AdminCategory[]> {
-  const supabase = createSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("Category")
-    .select("id, name, slug, emoji, sortOrder")
-    .eq("isActive", true)
-    .order("sortOrder", { ascending: true });
-
-  if (error) throw error;
-  return (data ?? []) as AdminCategory[];
+  return prisma.category.findMany({
+    where: { isActive: true },
+    orderBy: { sortOrder: "asc" },
+    select: { id: true, name: true, slug: true, emoji: true, sortOrder: true },
+  });
 }
 
 export async function fetchProducts(): Promise<AdminProduct[]> {
-  const supabase = createSupabaseAdmin();
-
-  const withImages = await supabase
-    .from("Product")
-    .select(PRODUCT_SELECT_WITH_IMAGES)
-    .order("sortOrder", { ascending: true });
-
-  if (!withImages.error) {
-    return (withImages.data ?? []) as AdminProduct[];
-  }
-
-  console.warn("ProductImage join failed, fallback:", withImages.error.message);
-
-  const fallback = await supabase
-    .from("Product")
-    .select(PRODUCT_SELECT_BASIC)
-    .order("sortOrder", { ascending: true });
-
-  if (fallback.error) throw fallback.error;
-  return ((fallback.data ?? []) as AdminProduct[]).map((p) => ({
-    ...p,
-    images: [],
-  }));
+  const products = await prisma.product.findMany({
+    orderBy: { sortOrder: "asc" },
+    include: {
+      category: {
+        select: { id: true, name: true, slug: true, emoji: true, sortOrder: true },
+      },
+      images: { orderBy: { sortOrder: "asc" } },
+    },
+  });
+  return products.map(mapProduct);
 }
 
 export async function fetchProduct(id: string): Promise<AdminProduct | null> {
-  const supabase = createSupabaseAdmin();
-
-  const withImages = await supabase
-    .from("Product")
-    .select(PRODUCT_SELECT_WITH_IMAGES)
-    .eq("id", id)
-    .maybeSingle();
-
-  if (!withImages.error) {
-    return withImages.data as AdminProduct | null;
-  }
-
-  const fallback = await supabase
-    .from("Product")
-    .select(PRODUCT_SELECT_BASIC)
-    .eq("id", id)
-    .maybeSingle();
-
-  if (fallback.error) throw fallback.error;
-  if (!fallback.data) return null;
-  return { ...(fallback.data as AdminProduct), images: [] };
+  const product = await prisma.product.findUnique({
+    where: { id },
+    include: {
+      category: {
+        select: { id: true, name: true, slug: true, emoji: true, sortOrder: true },
+      },
+      images: { orderBy: { sortOrder: "asc" } },
+    },
+  });
+  return product ? mapProduct(product) : null;
 }
 
 export async function slugExists(slug: string, excludeId?: string): Promise<boolean> {
-  const supabase = createSupabaseAdmin();
-  let query = supabase.from("Product").select("id").eq("slug", slug);
-  if (excludeId) query = query.neq("id", excludeId);
-  const { data, error } = await query.maybeSingle();
-  if (error) throw error;
-  return !!data;
+  const found = await prisma.product.findFirst({
+    where: {
+      slug,
+      ...(excludeId ? { id: { not: excludeId } } : {}),
+    },
+    select: { id: true },
+  });
+  return Boolean(found);
 }

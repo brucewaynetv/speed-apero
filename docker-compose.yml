@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: speed-apero-db
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: speedapero
+      POSTGRES_PASSWORD: speedapero
+      POSTGRES_DB: speedapero
+    volumes:
+      - speed_apero_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U speedapero -d speedapero"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  speed_apero_pgdata:

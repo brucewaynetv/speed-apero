@@ -36,7 +36,7 @@ export function MenuSection() {
         onCategoryChange={setActiveCategory}
       />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="mx-auto max-w-[90rem] px-4 sm:px-6 lg:px-8">
         {CATALOG_CATEGORIES.map((category) => {
           const products = getProductsByCategory(category.slug);
           if (products.length === 0) return null;
@@ -51,7 +51,7 @@ export function MenuSection() {
                 <span>{category.emoji}</span>
                 {category.name.toUpperCase()}
               </h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {products.map((product) => (
                   <ProductCard
                     key={product.slug}

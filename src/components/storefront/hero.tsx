@@ -74,12 +74,12 @@ export function HeroSection({ basePath = "" }: HeroSectionProps) {
 
       <div className="relative mx-auto flex max-w-7xl flex-col justify-center px-4 py-16 sm:px-6 sm:py-24 lg:py-32">
         <div className="max-w-2xl">
-          {demo && (
+          {demo && !demo.clientEdition && (
             <Badge
               variant={tier === "premium" ? "gold" : tier === "pro" ? "orange" : "outline"}
               className="mb-4"
             >
-              Démo {demo.label} · {demo.price} €
+              Version {demo.label} · {demo.price} €
             </Badge>
           )}
           <h1

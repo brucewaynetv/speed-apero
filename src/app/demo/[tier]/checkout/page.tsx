@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { PrepButton } from "@/components/storefront/prep-button";
 import { useCartStore } from "@/hooks/use-cart";
 import { formatMoney } from "@/lib/pricing/money";
 import { CommercialCtaSection } from "@/components/demo/commercial-cta";
@@ -360,14 +361,16 @@ export default function CheckoutPage() {
               <Button variant="secondary" onClick={() => setStep(2)}>
                 Retour
               </Button>
-              <Button
+              <PrepButton
                 className="flex-1 font-display text-lg"
                 size="lg"
+                prep="brew"
+                busy={loading}
+                busyLabel="Brewing…"
                 onClick={handleSubmit}
-                disabled={loading}
               >
-                {loading ? "Traitement..." : `CONFIRMER — ${formatMoney(total)}`}
-              </Button>
+                {`CONFIRMER — ${formatMoney(total)}`}
+              </PrepButton>
             </div>
           </div>
         )}

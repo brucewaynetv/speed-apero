@@ -6,6 +6,7 @@ import { countTodayOrders, sumTodayRevenue, fetchAdminOrders } from "@/lib/order
 import { formatMoney } from "@/lib/pricing/money";
 import { DEMO_HOURLY_ORDERS, DEMO_WEEKLY_REVENUE } from "@/lib/admin/demo-ops";
 import type { AdminOrder } from "@/lib/orders/types";
+import { isClientEdition } from "@/lib/product/edition";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,7 @@ export default async function AnalyticsPage({ params }: PageProps) {
   if (!tier) notFound();
 
   if (!canAccessAdminFeature(tier, "advancedAnalytics")) {
+    if (isClientEdition()) notFound();
     return <UpgradePlaceholder tier={tier} feature="Analytics" requiredTier="premium" />;
   }
 
@@ -84,7 +86,7 @@ export default async function AnalyticsPage({ params }: PageProps) {
           title="CA 7 jours"
           bars={DEMO_WEEKLY_REVENUE}
           accent="gold"
-          formatValue={(v) => `${v}€`}
+          valueSuffix="€"
         />
         <div className="space-y-4">
           <DonutStat

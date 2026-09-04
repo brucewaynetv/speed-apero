@@ -8,9 +8,10 @@ import { CREDIT_CENTS, LOYALTY_POINTS } from "@/lib/demo/account-demo";
 import { cn } from "@/lib/utils";
 
 export function TierClientExtras() {
-  const { features, label, tier, basePath } = useDemoTier();
+  const { features, label, tier, basePath, clientEdition } = useDemoTier();
 
   if (tier === "starter") {
+    if (clientEdition) return null;
     return (
       <div className="border-b border-white/5 bg-brand-anthracite/30 px-4 py-2 text-center text-xs text-brand-cream/50">
         Formule <span className="font-semibold text-brand-cream/70">{label}</span> — commande
@@ -59,9 +60,11 @@ export function TierClientExtras() {
           </span>
         )}
       </div>
-      <p className={cn("text-[11px] uppercase tracking-wide text-brand-cream/40")}>
-        Démo {label}
-      </p>
+      {!clientEdition && (
+        <p className={cn("text-[11px] uppercase tracking-wide text-brand-cream/40")}>
+          Version {label}
+        </p>
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { DemoTierProvider } from "@/components/demo/demo-tier-provider";
 import { isValidTier, type DemoTier } from "@/lib/demo/tiers";
+import { getProductEdition, isClientEdition } from "@/lib/product/edition";
 
 interface DemoTierLayoutProps {
   children: React.ReactNode;
@@ -17,8 +18,13 @@ export default async function DemoTierLayout({
     notFound();
   }
 
+  const client = isClientEdition();
+  if (client && tier !== getProductEdition()) {
+    notFound();
+  }
+
   return (
-    <DemoTierProvider tier={tier as DemoTier}>
+    <DemoTierProvider tier={tier as DemoTier} clientEdition={client}>
       {children}
     </DemoTierProvider>
   );

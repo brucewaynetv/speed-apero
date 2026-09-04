@@ -62,10 +62,7 @@ export function OrderTracking({ orderId, orderNumber }: OrderTrackingProps) {
         </div>
 
         {preparing && (
-          <div className="mt-6 overflow-hidden rounded-xl border border-white/10 bg-[#08080a] p-3">
-            <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-brand-orange">
-              // kitchen_runtime · live prep
-            </p>
+          <div className="mt-6">
             <PrepLabSection compact autoPlay />
           </div>
         )}

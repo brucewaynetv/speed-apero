@@ -19,12 +19,10 @@ const GUIDE_HINTS: Record<
   ],
   pro: [
     { label: "Tester une promo", href: "#carte", icon: Gift },
-    { label: "Prep Lab", href: "#prep-lab", icon: Sparkles },
     { label: "Mon compte", href: "compte", icon: Sparkles },
     { label: "Programmer", href: "checkout", icon: CalendarClock },
   ],
   premium: [
-    { label: "Prep Lab", href: "#prep-lab", icon: Sparkles },
     { label: "Fidélité", href: "compte", icon: Sparkles },
     { label: "Suivi live", href: "#carte", icon: MapPin },
     { label: "Crédit 5 €", href: "checkout", icon: Gift },
@@ -50,7 +48,7 @@ export function DemoGuideBar() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs text-brand-cream/50">
-                Démo{" "}
+                Version{" "}
                 <span
                   className={cn(
                     "font-semibold",
